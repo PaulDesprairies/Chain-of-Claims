@@ -1,4 +1,5 @@
 pragma solidity ^0.5.2;
+pragma experimental ABIEncoderV2;
 
 import "github.com/OpenZeppelin/openzeppelin-solidity/contracts/token/ERC721/IERC721.sol";
 import "github.com/OpenZeppelin/openzeppelin-solidity/contracts/token/ERC721/IERC721Receiver.sol";
@@ -11,7 +12,7 @@ import "github.com/OpenZeppelin/openzeppelin-solidity/contracts/introspection/ER
  * @title ERC721 Non-Fungible Token Standard basic implementation
  * @dev see https://eips.ethereum.org/EIPS/eip-721
  */
-contract bdc is ERC165, IERC721 {
+contract bonDeCommande is ERC165, IERC721 {
     using SafeMath for uint256;
     using Address for address;
     using Counters for Counters.Counter;
@@ -102,14 +103,14 @@ contract bdc is ERC165, IERC721 {
      * @param _secret Secret code to be chosen by the client
      * @return secret
      */
-    function creerCompteFournisseur(string memory _nom, string memory _localisation, string memory _TVA, uint _secret) public returns(bytes32) {
+    function creerCompteFournisseur(string memory _nom, string memory _localisation, string memory _TVA, string memory _secret) public returns(bytes32) {
         bytes32 secret = keccak256(abi.encodePacked(_secret));
         Fournisseur memory nouveauFournisseur;
         nouveauFournisseur.id = address(0);
         nouveauFournisseur.client = msg.sender;
         nouveauFournisseur.nom = _nom;
         nouveauFournisseur.localisation = _localisation;
-        nouveauFournisseur.localisation = _TVA;
+        nouveauFournisseur.TVA = _TVA;
         nouveauFournisseur.secret = secret;
         fournisseurs.push(nouveauFournisseur);
         _indexFournisseur[msg.sender] = f;
@@ -117,6 +118,10 @@ contract bdc is ERC165, IERC721 {
         f++;
         
         return secret;
+    }
+    
+    function debugSecret(string memory debug) public pure returns(bytes32){
+        return keccak256(abi.encodePacked(debug));
     }
 
     /**
@@ -127,7 +132,7 @@ contract bdc is ERC165, IERC721 {
      */
     function activateAccount(bytes32 _secret) public returns (address){
         uint i = _activation[_secret];
-        require( i > 1, "Ce code n'existe pas ou a déjà été utilisé");
+        require( i >= 1, "Ce code n'existe pas ou a déjà été utilisé");
         fournisseurs[i].id = msg.sender;
         _activation[_secret] = 0;
         return fournisseurs[i].client;
@@ -144,7 +149,7 @@ contract bdc is ERC165, IERC721 {
      */
     function _mint(address to, uint256 _tokenID, uint256 _montant, string memory _description) public {
         require(to != address(0),"Vous ne pouvez transférer ce bon à une adresse vide");
-        require(_indexFournisseur[to]>1,"Veuillez enregistrer votre fournisseur d'abord");
+        require(_indexFournisseur[to] >= 1,"Veuillez enregistrer votre fournisseur d'abord");
         require(!_exists(_tokenID),"Ce numéro de bon existe déjà");
         _tokenOwner[_tokenID] = to;
         _ownedTokensCount[to].increment();
@@ -162,7 +167,24 @@ contract bdc is ERC165, IERC721 {
         emit Transfer(address(0), to, _tokenID);
     }
 
-
+        /**
+     * @dev Gets the list of suppliers.
+     * @return Fournisseur
+     */
+    function listeFournisseur() public view returns (Fournisseur[] memory){
+        return fournisseurs;
+    }
+    
+    
+        /**
+     * @dev Gets the list of orders.
+     * @return BonDeCommande
+     */
+    function listeBons() public view returns (BonDeCommande[] memory){
+        return bons;
+    }
+    
+    
     /**
      * @dev Gets the balance of the specified address.
      * @param owner address to query the balance of
