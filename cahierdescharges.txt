@@ -1,0 +1,15 @@
+Cahier des charges
+
+Une interface internet comportant (html) :
+
+1 - Une page d'accueil qui décrit le concept et qui comporte un connection a metamask / redirection.
+2 - Une redirection après la connection sur une interface double.
+    a - Effectuer un virement (cas de figure grand compte : associer bon de commande + contrat / fournisseur : afficher créances restantes).
+    b - Une page carnet d'adresse ou création de nouveau contact (création d'un noeud)
+3 - Une page pour décrire la chaîne d'approvisionnement reconstituée
+
+Une partie serveur comportant (js) :
+1 - Une interface
+
+Une partie back end comportant (sol) :
+1 - Contrats

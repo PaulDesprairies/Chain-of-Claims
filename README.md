@@ -1,2 +1,3 @@
 # Chain-of-Claims
-Interface permettant la fongibilisation de créances
+Interface permettant la fongibilisation de créances.
+Prototype.
