@@ -1,4 +1,4 @@
-pragma solidity ^0.5.7;
+pragma solidity ^0.5.6;
 pragma experimental ABIEncoderV2;
 
 
@@ -19,7 +19,6 @@ contract bonDeCommande {
         uint[][2] bonsDeCommande;
         string TVA;
         bytes32 secret;
-        bool admin;
     }
 
     Fournisseur[] public fournisseurs;
@@ -46,17 +45,28 @@ contract bonDeCommande {
     
     
     constructor (string memory _nom, string memory _localisation, string memory _tva) public {
+
+        //initialisations
+        BonDeCommande memory genesisBon;
+        genesisBon.description = "genesis";
+        bons.push(genesisBon);
+        _indexFournisseur[address(0)] = f;
+        f++;
+        Fournisseur memory genesisFournisseur;
+        genesisFournisseur.nom = "genesis";
+        fournisseurs.push(genesisFournisseur);
+        _indexBon[0] = b;
+        b++;
+        
         Fournisseur memory nouveauFournisseur;
         nouveauFournisseur.id = msg.sender;
         nouveauFournisseur.client = address(0); // client défini sur l'addresse 0
         nouveauFournisseur.nom = _nom;
         nouveauFournisseur.localisation = _localisation;
         nouveauFournisseur.TVA = _tva;
-        nouveauFournisseur.admin = true;
         fournisseurs.push(nouveauFournisseur);
         _indexFournisseur[msg.sender] = f;
         f++;
-        
     }
 
 
@@ -70,7 +80,7 @@ contract bonDeCommande {
      * @return secret
      */
     function creerCompteFournisseur(string memory _nom, string memory _localisation, string memory _TVA, string memory _secret) public returns(bytes32) {
-        require(fournisseurs[_indexFournisseur[msg.sender]].admin == true || _existsFournisseur(msg.sender),"Vous n'êtes pas enregistré en tant que fournisseur");
+        require(_existsFournisseur(msg.sender),"Vous n'êtes pas enregistré en tant que fournisseur");
         bytes32 secret = keccak256(abi.encodePacked(_secret));
         Fournisseur memory nouveauFournisseur;
         nouveauFournisseur.id = address(0);
@@ -111,7 +121,7 @@ contract bonDeCommande {
      * @param _numBon uint ID of the order to be minted
      * @return true or false
      */
-    function _existsBon(uint _numBon) internal view returns (bool) {
+    function _existsBon(uint _numBon) public view returns (bool) { //internal
         return bons[_indexBon[_numBon]].rang > 0;
     }
     
@@ -120,10 +130,19 @@ contract bonDeCommande {
      * @param _fournisseur uint ID of the order to be minted
      * @return true or false
      */
-    function _existsFournisseur(address _fournisseur) internal view returns (bool) {
-        return fournisseurs[_indexFournisseur[_fournisseur]].id != address(0); // Marche pour tous les fournisseurs excepté celui au rang 0
+    function _existsFournisseur(address _fournisseur) public view returns (bool) { //internal
+        return fournisseurs[_indexFournisseur[_fournisseur]].id != address(0);
     }
-
+    
+        /**
+     * @dev Public function to check whether a supplier is the one at the top of the supply chain or not.
+     * @param _fournisseur uint ID of the order to be minted
+     * @return true or false
+     */
+    function _isHigherSupplier(address _fournisseur) public view returns (bool) {
+        return _indexFournisseur[_fournisseur] == 1;
+    }
+    
     /**
      * @dev Public function to mint a new order.
      * Reverts if the given purchase order ID already exists.
@@ -135,8 +154,9 @@ contract bonDeCommande {
      */
      
     function _mint(address to, uint _numBon, uint _montant, string memory _description, uint _echeance) public {
-        require(fournisseurs[_indexFournisseur[msg.sender]].admin == true,"Vous devez être le fournisseur en haut de chaîne");
+        require(_isHigherSupplier(msg.sender),"Vous devez être le fournisseur en haut de chaîne");
         require(_existsFournisseur(to),"Veuillez enregistrer votre fournisseur d'abord");
+        require(to != msg.sender, "Vous ne pouvez pas vous auto-attribuer un bon");
         require(!_existsBon(_numBon),"Ce numéro de bon existe déjà");
 
         //Création du bon de commande
@@ -153,9 +173,7 @@ contract bonDeCommande {
         b++;
         
         //Maj des infos fournisseur
-        // fournisseurs[_indexFournisseur[to]].bonsDeCommande[0][fournisseurs[_indexFournisseur[to]].bonsDeCommande[0].length] = _numBon;
-        // fournisseurs[_indexFournisseur[to]].bonsDeCommande[1][fournisseurs[_indexFournisseur[to]].bonsDeCommande[1].length] = _montant;
-        
+        nouvelleCommande(to,_numBon, _montant);
     }
     
         /**
@@ -181,7 +199,7 @@ contract bonDeCommande {
      */
      
     function listeDeCommandes(address _owner) public view returns (uint[][2] memory) {
-        //require(_indexFournisseur[_owner]!=0, "Ce fournisseur n'existe pas");
+        require(_existsFournisseur(_owner), "Ce fournisseur n'existe pas");
     return fournisseurs[_indexFournisseur[_owner]].bonsDeCommande;
     }
 
@@ -205,40 +223,147 @@ contract bonDeCommande {
         uint[][2] memory carnetDeCommande = listeDeCommandes(_holder);
         return carnetDeCommande[0].length;
     }
-    // function _longueurCarnetDeCommande_2(address _holder) public view returns(uint){
-    //     uint[][2] memory carnetDeCommande = listeDeCommandes(_holder);
-    //     return carnetDeCommande.length; --> retourne 2
-    // }
 
+    //     return carnetDeCommande.length; --> retourne toujours 2
     
-
     
         /**
+     * @dev Check whether the supplier detains the right order, at the right amount.
+     * @param _holder address to query the check
+     * @param _numBon order id
+     * @return bool true or false
+     */
+    function checkIfHeldBon(address _holder, uint _numBon) public view returns (bool, uint){ //internal
+        uint[][2] memory carnetDeCommande = listeDeCommandes(_holder);
+        bool check;
+        uint index = 0;
+        for(uint i = 0; i < _longueurCarnetDeCommande(_holder); i++ ){
+            if(carnetDeCommande[0][i] == _numBon){
+                check = true;
+                index = i;
+            }
+        }
+    return (check,index) ;
+    }
+
+   /**
      * @dev Check whether the supplier detains the right order, at the right amount.
      * @param _holder address to query the check
      * @param _numBon order id
      * @param _montant order value
      * @return bool true or false
      */
-    function checkIfHeld(address _holder, uint _numBon, uint _montant) public view returns (bool){
+    function checkIfHeldBonEtMontant(address _holder, uint _numBon, uint _montant) internal view returns (bool, uint){
         uint[][2] memory carnetDeCommande = listeDeCommandes(_holder);
         bool check;
+        uint index = 0;
         for(uint i = 0; i < _longueurCarnetDeCommande(_holder); i++ ){
             if(carnetDeCommande[0][i] == _numBon && carnetDeCommande[1][i] >= _montant){
                 check = true;
+                index = i;
             }
         }
-    return check;
+    return (check, index);
+    }
+    
+        /**
+     * @dev Create order in suppliers' book in case they did not have such an order before.
+     * @param _numBon order
+     * @param _montant montant
+     * @param to address receiving
+     */
+    function nouvelleCommande(address to, uint _numBon, uint _montant) public{ //internal
+        fournisseurs[_indexFournisseur[to]].bonsDeCommande[0].push(_numBon);
+        fournisseurs[_indexFournisseur[to]].bonsDeCommande[1].push(_montant);
     }
     
     
-    function transfer(uint _numBon, uint _montant, address to) public view{
-        require(fournisseurs[_indexFournisseur[msg.sender]].admin == true || _existsFournisseur(msg.sender),"Vous n'êtes pas enregistré en tant que fournisseur");
-        require(_existsFournisseur(to), "Vous ne pouvez transférer les fonds qu'à un fournisseur déjà enregistré");
-        require(checkIfHeld(to, _numBon, _montant), "Vous ne possédez pas de ce bon en quantité suffisant (ou alors ne possédez pas ce bon du tout");
+     /**
+     * @dev Delete order in suppliers' book in case they forwarded the whole order.
+     * @param _index order index
+     * @param from address sending
+     */
+    function supprimerCommande(address from, uint _index) public view{ //internal
+        uint[][2] memory carnetDeCommande = listeDeCommandes(from);
+        
+        uint long = _longueurCarnetDeCommande(from);
+        
+        //n'intervient que dans le cas d'un transfert donc long != 0
+        if (long == 1){
+          delete carnetDeCommande[0][_index];
+          delete carnetDeCommande[0][_index];
+        }else{
+        
+        carnetDeCommande[0][_index] = carnetDeCommande[0][long-1];
+        carnetDeCommande[1][_index] = carnetDeCommande[1][long-1];
+        }
+    }
+    
+    
+       /**
+     * @dev Check whether the supplier detains the right order, at the right amount.
+     * @param _numBon order id
+     * @param _montant order value
+     * @param to address receiving
+     * @param from address sending
+     */
+    function transfer(address to, address from, uint _index, uint _numBon, uint _montant) public{ //internal
+        // Partie addition
+        bool check;
+        uint index;
+        (check, index) = checkIfHeldBon(to, _numBon);
+        if (check){                                     //cas de possesion du bon
+            fournisseurs[_indexFournisseur[to]].bonsDeCommande[1][index] += _montant;
+        
+        }else{                                          //cas de non possession du bon
+            nouvelleCommande(to,_numBon, _montant);
+        }
+        
+        // Partie soustraction
+        uint[][2] memory carnetDeCommande = listeDeCommandes(from);
+        
+        if(carnetDeCommande[1][index] == _montant){     //transfert de 100% du bon
+            supprimerCommande(from, _index);
+        }else{                                          //transfert d'une partie du bon
+            carnetDeCommande[1][index] -= _montant;
+        }
+        
+        
         
     }
+        /**
+     * @dev Check whether the supplier detains the right order, at the right amount.
+     * @param to address receiving
+     * @param _numBon order id
+     * @param _montant order value
+     */
+    function pushBon(uint _numBon, uint _montant, address to) public{
+        require(_existsFournisseur(msg.sender),"Vous n'êtes pas enregistré en tant que fournisseur");
+        require(_existsFournisseur(to) && !_isHigherSupplier(to), "Vous ne pouvez transférer les fonds qu'à un fournisseur déjà enregistré");
+        bool check;
+        uint index;
+        (check, index) = checkIfHeldBonEtMontant(msg.sender, _numBon, _montant);
+        require(check, "Vous ne possédez pas de ce bon en quantité suffisant (ou alors ne possédez pas ce bon du tout"); 
+        transfer(to, msg.sender, index, _numBon, _montant);
+    }
+
+    function pullBon(uint _numBon, uint _montant, address from) public{
+        require(!_isHigherSupplier(msg.sender) || _existsFournisseur(msg.sender),"Vous n'êtes pas enregistré en tant que fournisseur");
+        require(fournisseurs[_indexFournisseur[msg.sender]].client == from, "Vous ne pouvez vous faire parvenir des fonds qu'à votre client");
+        bool check;
+        uint index;
+        (check, index) = checkIfHeldBonEtMontant(from, _numBon, _montant);
+        require(check, "Votre client ne possède pas de ce bon en quantité suffisante (ou alors il ne possède pas ce bon du tout"); 
+        transfer(msg.sender, from, index, _numBon, _montant);
+    }
+
+        /**
+     * @dev Pay the receivable back.
+     * @param _numBon order id
+     */
+    
+    
+    function burn(uint _numBon) public{
+     }
     
 }
-
-
