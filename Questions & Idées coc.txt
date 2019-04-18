@@ -17,6 +17,11 @@ Push : Le transfert donne droit à l'appropriation du token.
 Pull : j'ai le droit de me servir dans le wallet de mon client unilatéralement.
 Hybride : Droit d'appropriation puis appropriation.
 
+Idées business:
+proposer un système hybride d'affacturage simple vs affacturage inversé (pull vs push) au choix des bénéficiaires
+
+
+
 ERC20 ---> ERC 721 ou ERC 721 ---> ERC20 (current) ?
 
 ***Use case de la lettre de change***
@@ -30,3 +35,4 @@ Possibilité de gain BFR
 
 Risque :
 ?
+
