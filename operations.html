@@ -13,9 +13,9 @@
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
     </head>
 
-    <body>
+    <body onload="redirection()">
             <script src="https://cdn.ethers.io/scripts/ethers-v4.min.js" charset="utf-8" type="text/javascript"></script>    
-            <script src="operations.js" charset="utf-8" type="text/javascript"></script>
+            <script src="coc.js" charset="utf-8" type="text/javascript"></script>
             <script src="load.js" charset="utf-8" type="text/javascript"></script>
 
             <div></div>
@@ -23,17 +23,18 @@
             </div>
 
         <div>
-            <button onclick="index()">Retour à l'accueil</button><br><br>
+            <button onclick="goToIndex()">Retour à l'accueil</button><br><br>
         </div>
         <div id = tokens>
         </div>
         <div>
             **** Rentrer un numéro de commande ou générer un numéro lambda ****<br>
-            <button onclick="mint()">Créer un bon de commande</button><br><br>
+            <button onclick="operations()">S'identifier</button><br><br>
 
-            **** Créer un fournisseur ****<br>
-            <button onclick="mint()">Créer un fournisseur</button><br><br>
+            <!-- **** Créer un fournisseur ****<br>
+            <button onclick="afficheBonsDeCommande()">Longueur carnet de commande</button><br><br> -->
 
+            <span type="text" id="carnetDeCommande"></span><br>
 
         </div>
     </body>
