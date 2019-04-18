@@ -1,3 +1,5 @@
+let dapp;
+
 async function load() {
     const abi = [
         {
@@ -8,7 +10,19 @@ async function load() {
                     "type": "address"
                 },
                 {
-                    "name": "tokenId",
+                    "name": "_numBon",
+                    "type": "uint256"
+                },
+                {
+                    "name": "_montant",
+                    "type": "uint256"
+                },
+                {
+                    "name": "_description",
+                    "type": "string"
+                },
+                {
+                    "name": "_echeance",
                     "type": "uint256"
                 }
             ],
@@ -22,15 +36,30 @@ async function load() {
             "constant": false,
             "inputs": [
                 {
-                    "name": "to",
-                    "type": "address"
-                },
+                    "name": "_secret",
+                    "type": "bytes32"
+                }
+            ],
+            "name": "activateAccount",
+            "outputs": [
                 {
-                    "name": "tokenId",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "constant": false,
+            "inputs": [
+                {
+                    "name": "_numBon",
                     "type": "uint256"
                 }
             ],
-            "name": "approve",
+            "name": "burn",
             "outputs": [],
             "payable": false,
             "stateMutability": "nonpayable",
@@ -39,265 +68,515 @@ async function load() {
         {
             "constant": false,
             "inputs": [
+                {
+                    "name": "_nom",
+                    "type": "string"
+                },
+                {
+                    "name": "_localisation",
+                    "type": "string"
+                },
+                {
+                    "name": "_TVA",
+                    "type": "string"
+                },
+                {
+                    "name": "_secret",
+                    "type": "string"
+                }
+            ],
+            "name": "creerCompteFournisseur",
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "bytes32"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "constant": false,
+            "inputs": [
+                {
+                    "name": "to",
+                    "type": "address"
+                },
+                {
+                    "name": "_numBon",
+                    "type": "uint256"
+                },
+                {
+                    "name": "_montant",
+                    "type": "uint256"
+                }
+            ],
+            "name": "nouvelleCommande",
+            "outputs": [],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "constant": false,
+            "inputs": [
+                {
+                    "name": "_numBon",
+                    "type": "uint256"
+                },
+                {
+                    "name": "_montant",
+                    "type": "uint256"
+                },
+                {
+                    "name": "from",
+                    "type": "address"
+                }
+            ],
+            "name": "pullBon",
+            "outputs": [],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "constant": false,
+            "inputs": [
+                {
+                    "name": "_numBon",
+                    "type": "uint256"
+                },
+                {
+                    "name": "_montant",
+                    "type": "uint256"
+                },
+                {
+                    "name": "to",
+                    "type": "address"
+                }
+            ],
+            "name": "pushBon",
+            "outputs": [],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "constant": false,
+            "inputs": [
+                {
+                    "name": "to",
+                    "type": "address"
+                },
                 {
                     "name": "from",
                     "type": "address"
                 },
                 {
-                    "name": "to",
-                    "type": "address"
-                },
-                {
-                    "name": "tokenId",
-                    "type": "uint256"
-                }
-            ],
-            "name": "safeTransferFrom",
-            "outputs": [],
-            "payable": false,
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "constant": false,
-            "inputs": [
-                {
-                    "name": "from",
-                    "type": "address"
-                },
-                {
-                    "name": "to",
-                    "type": "address"
-                },
-                {
-                    "name": "tokenId",
+                    "name": "_index",
                     "type": "uint256"
                 },
                 {
-                    "name": "_data",
-                    "type": "bytes"
-                }
-            ],
-            "name": "safeTransferFrom",
-            "outputs": [],
-            "payable": false,
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "constant": false,
-            "inputs": [
-                {
-                    "name": "to",
-                    "type": "address"
+                    "name": "_numBon",
+                    "type": "uint256"
                 },
                 {
-                    "name": "approved",
-                    "type": "bool"
-                }
-            ],
-            "name": "setApprovalForAll",
-            "outputs": [],
-            "payable": false,
-            "stateMutability": "nonpayable",
-            "type": "function"
-        },
-        {
-            "constant": false,
-            "inputs": [
-                {
-                    "name": "from",
-                    "type": "address"
-                },
-                {
-                    "name": "to",
-                    "type": "address"
-                },
-                {
-                    "name": "tokenId",
+                    "name": "_montant",
                     "type": "uint256"
                 }
             ],
-            "name": "transferFrom",
+            "name": "transfer",
             "outputs": [],
             "payable": false,
             "stateMutability": "nonpayable",
             "type": "function"
         },
         {
-            "inputs": [],
+            "inputs": [
+                {
+                    "name": "_nom",
+                    "type": "string"
+                },
+                {
+                    "name": "_localisation",
+                    "type": "string"
+                },
+                {
+                    "name": "_tva",
+                    "type": "string"
+                }
+            ],
             "payable": false,
             "stateMutability": "nonpayable",
             "type": "constructor"
         },
         {
-            "anonymous": false,
+            "constant": true,
             "inputs": [
                 {
-                    "indexed": true,
+                    "name": "",
+                    "type": "bytes32"
+                }
+            ],
+            "name": "_activation",
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [
+                {
+                    "name": "_numBon",
+                    "type": "uint256"
+                }
+            ],
+            "name": "_existsBon",
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [
+                {
+                    "name": "_fournisseur",
+                    "type": "address"
+                }
+            ],
+            "name": "_existsFournisseur",
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [
+                {
+                    "name": "_fournisseur",
+                    "type": "address"
+                }
+            ],
+            "name": "_isHigherSupplier",
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [
+                {
+                    "name": "_holder",
+                    "type": "address"
+                }
+            ],
+            "name": "_longueurCarnetDeCommande",
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [
+                {
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "name": "bons",
+            "outputs": [
+                {
+                    "name": "numBon",
+                    "type": "uint256"
+                },
+                {
+                    "name": "montant",
+                    "type": "uint256"
+                },
+                {
+                    "name": "rang",
+                    "type": "uint8"
+                },
+                {
+                    "name": "description",
+                    "type": "string"
+                },
+                {
+                    "name": "echeance",
+                    "type": "uint256"
+                },
+                {
+                    "name": "dateEmission",
+                    "type": "uint256"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [
+                {
+                    "name": "_holder",
+                    "type": "address"
+                },
+                {
+                    "name": "_numBon",
+                    "type": "uint256"
+                }
+            ],
+            "name": "checkIfHeldBon",
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "bool"
+                },
+                {
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [
+                {
+                    "name": "debug",
+                    "type": "string"
+                }
+            ],
+            "name": "debugSecret_NumBon",
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "bytes32"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "pure",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [
+                {
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "name": "fournisseurs",
+            "outputs": [
+                {
+                    "name": "id",
+                    "type": "address"
+                },
+                {
+                    "name": "client",
+                    "type": "address"
+                },
+                {
+                    "name": "nom",
+                    "type": "string"
+                },
+                {
+                    "name": "localisation",
+                    "type": "string"
+                },
+                {
+                    "name": "TVA",
+                    "type": "string"
+                },
+                {
+                    "name": "secret",
+                    "type": "bytes32"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [],
+            "name": "listeBons",
+            "outputs": [
+                {
+                    "components": [
+                        {
+                            "name": "numBon",
+                            "type": "uint256"
+                        },
+                        {
+                            "name": "proprietaires",
+                            "type": "address[]"
+                        },
+                        {
+                            "name": "montant",
+                            "type": "uint256"
+                        },
+                        {
+                            "name": "rang",
+                            "type": "uint8"
+                        },
+                        {
+                            "name": "description",
+                            "type": "string"
+                        },
+                        {
+                            "name": "echeance",
+                            "type": "uint256"
+                        },
+                        {
+                            "name": "dateEmission",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "",
+                    "type": "tuple[]"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [
+                {
+                    "name": "_owner",
+                    "type": "address"
+                }
+            ],
+            "name": "listeDeCommandes",
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "uint256[][2]"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [
+                {
+                    "name": "_numBon",
+                    "type": "uint256"
+                }
+            ],
+            "name": "listeDeDetenteur",
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "address[]"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [],
+            "name": "listeFournisseur",
+            "outputs": [
+                {
+                    "components": [
+                        {
+                            "name": "id",
+                            "type": "address"
+                        },
+                        {
+                            "name": "client",
+                            "type": "address"
+                        },
+                        {
+                            "name": "nom",
+                            "type": "string"
+                        },
+                        {
+                            "name": "localisation",
+                            "type": "string"
+                        },
+                        {
+                            "name": "bonsDeCommande",
+                            "type": "uint256[][2]"
+                        },
+                        {
+                            "name": "TVA",
+                            "type": "string"
+                        },
+                        {
+                            "name": "secret",
+                            "type": "bytes32"
+                        }
+                    ],
+                    "name": "",
+                    "type": "tuple[]"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [
+                {
                     "name": "from",
                     "type": "address"
                 },
                 {
-                    "indexed": true,
-                    "name": "to",
-                    "type": "address"
-                },
-                {
-                    "indexed": true,
-                    "name": "tokenId",
+                    "name": "_index",
                     "type": "uint256"
                 }
             ],
-            "name": "Transfer",
-            "type": "event"
-        },
-        {
-            "anonymous": false,
-            "inputs": [
-                {
-                    "indexed": true,
-                    "name": "owner",
-                    "type": "address"
-                },
-                {
-                    "indexed": true,
-                    "name": "approved",
-                    "type": "address"
-                },
-                {
-                    "indexed": true,
-                    "name": "tokenId",
-                    "type": "uint256"
-                }
-            ],
-            "name": "Approval",
-            "type": "event"
-        },
-        {
-            "anonymous": false,
-            "inputs": [
-                {
-                    "indexed": true,
-                    "name": "owner",
-                    "type": "address"
-                },
-                {
-                    "indexed": true,
-                    "name": "operator",
-                    "type": "address"
-                },
-                {
-                    "indexed": false,
-                    "name": "approved",
-                    "type": "bool"
-                }
-            ],
-            "name": "ApprovalForAll",
-            "type": "event"
-        },
-        {
-            "constant": true,
-            "inputs": [
-                {
-                    "name": "owner",
-                    "type": "address"
-                }
-            ],
-            "name": "balanceOf",
-            "outputs": [
-                {
-                    "name": "",
-                    "type": "uint256"
-                }
-            ],
-            "payable": false,
-            "stateMutability": "view",
-            "type": "function"
-        },
-        {
-            "constant": true,
-            "inputs": [
-                {
-                    "name": "tokenId",
-                    "type": "uint256"
-                }
-            ],
-            "name": "getApproved",
-            "outputs": [
-                {
-                    "name": "",
-                    "type": "address"
-                }
-            ],
-            "payable": false,
-            "stateMutability": "view",
-            "type": "function"
-        },
-        {
-            "constant": true,
-            "inputs": [
-                {
-                    "name": "owner",
-                    "type": "address"
-                },
-                {
-                    "name": "operator",
-                    "type": "address"
-                }
-            ],
-            "name": "isApprovedForAll",
-            "outputs": [
-                {
-                    "name": "",
-                    "type": "bool"
-                }
-            ],
-            "payable": false,
-            "stateMutability": "view",
-            "type": "function"
-        },
-        {
-            "constant": true,
-            "inputs": [
-                {
-                    "name": "tokenId",
-                    "type": "uint256"
-                }
-            ],
-            "name": "ownerOf",
-            "outputs": [
-                {
-                    "name": "",
-                    "type": "address"
-                }
-            ],
-            "payable": false,
-            "stateMutability": "view",
-            "type": "function"
-        },
-        {
-            "constant": true,
-            "inputs": [
-                {
-                    "name": "interfaceId",
-                    "type": "bytes4"
-                }
-            ],
-            "name": "supportsInterface",
-            "outputs": [
-                {
-                    "name": "",
-                    "type": "bool"
-                }
-            ],
+            "name": "supprimerCommande",
+            "outputs": [],
             "payable": false,
             "stateMutability": "view",
             "type": "function"
         }
     ]
 
-    const addressContract = "0x37a09fd1ac41a2e3d1151d1a62d086ccc52813ee" //Remix #1 défi2
+    const addressContract = "0x1f41fcea78bbc5d53c5ae33467b1ac91a09eee8c" //Remix #1 défi2
 
 
     try {
