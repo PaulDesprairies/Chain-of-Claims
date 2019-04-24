@@ -59,7 +59,6 @@ contract bonDeCommande {
         
         Fournisseur memory premierFournisseur = Fournisseur(msg.sender, _nom, _localisation, _tva, new uint[](0), new uint[](0), address(0), new address[](0) ,0);
         fournisseurs.push(premierFournisseur);
-        //fournisseurs[1].tierOne.push(address(0));
         _indexFournisseur[msg.sender] = f;
         f++;
         
@@ -98,25 +97,11 @@ contract bonDeCommande {
         require(by >= 1, "Ce code n'existe pas ou a déjà été utilisé");
         fournisseurs[by].id = msg.sender;
         _indexFournisseur[msg.sender] = by;
-        // address[] memory tierOneClient = listeTierOne(fournisseurs[by].client);
-        // tierOneClient[tierOneClient.length - 1] = msg.sender;
         ajouterTierOne(fournisseurs[_indexFournisseur[msg.sender]].client,msg.sender);
         _activation[_secret] = 0;
         return (fournisseurs[by].client, msg.sender);
     }
-    
-    //debug
-    function checkTierOneLength(uint index) public view returns(uint){
-        address[] memory tierOneClient = listeTierOne(fournisseurs[index].id);
-        return tierOneClient.length;
-    }
-    
-    
-    //debug
-    function checkLastTierOne(uint index) public view returns(address){
-        address[] memory tierOneClient = listeTierOne(fournisseurs[index].id);
-        return tierOneClient[tierOneClient.length-1];
-    }
+
     
         /**
      * @dev Public function to check whether an order exists.
@@ -145,6 +130,11 @@ contract bonDeCommande {
         return _indexFournisseur[_fournisseur] == 1;
     }
     
+            /**
+     * @dev Public function to check whether a supplier is the one at the top of the supply chain or not.
+     * @param _tierZero adresse client
+     * @param _tierOne adresse fournisseur
+     */
     function ajouterTierOne(address _tierZero, address _tierOne)public {
         fournisseurs[_indexFournisseur[_tierZero]].tierOne.push(_tierOne);
     }
@@ -161,17 +151,18 @@ contract bonDeCommande {
      
     function _mint(address to, uint _numBon, uint _montant, string memory _description, uint _echeance) public {
         require(_isHigherSupplier(msg.sender),"Vous devez être le fournisseur en haut de chaîne");
-        require(_existsFournisseur(to),"Veuillez enregistrer votre fournisseur d'abord");
+        require(_existsFournisseur(to),"Veuillez enregistrer votre fournisseur d'abord ou lui laisser le temps de s'inscrire");
         require(to != msg.sender, "Vous ne pouvez pas vous auto-attribuer un bon");
         require(!_existsBon(_numBon),"Ce numéro de bon existe déjà");
 
         //Création du bon de commande
         BonDeCommande memory nouveauBon;
         nouveauBon = BonDeCommande(_numBon, new address[](0), 1, _montant, _description, _echeance, block.timestamp);
-        nouveauBon.proprietaires[0] = to;
         bons.push(nouveauBon);
         _indexBon[_numBon] = b;
+        bons[_indexBon[b]].proprietaires.push(to);
         b++;
+        
         
         //Maj des infos fournisseur
         nouvelleCommande(to,_numBon, _montant);
@@ -211,7 +202,7 @@ contract bonDeCommande {
      * @param _numBon uint ID of the purchase order to query the owner of
      * @return address currently marked as the owner of the given purchase order ID
      */
-    function listeDeDetenteur(uint _numBon) public view returns (address[] memory) {
+    function listeDeDetenteurs(uint _numBon) public view returns (address[] memory) {
         address[] memory owner = bons[_indexBon[_numBon]].proprietaires;
         return owner;
     }
@@ -256,7 +247,7 @@ contract bonDeCommande {
      * @param _montant order value
      * @return bool true or false
      */
-    function checkIfHeldBonEtMontant(address _holder, uint _numBon, uint _montant) internal view returns (bool, uint){
+    function checkIfHeldBonEtMontant(address _holder, uint _numBon, uint _montant) public view returns (bool, uint){
         uint[] memory num;
         uint[] memory montant;
         (num, montant) = listeDeCommandes(_holder);
