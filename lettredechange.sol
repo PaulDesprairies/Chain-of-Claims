@@ -9,31 +9,30 @@ import "github.com/OpenZeppelin/openzeppelin-solidity/contracts/utils/Address.so
 contract bonDeCommande {
     using SafeMath for uint;
     using Address for address;
-
     
      struct Fournisseur {
-        address id;
-        address client;
-        string nom;
+        address id; //primary key
+        string nom; //traceability infos
         string localisation;
-        uint[][2] bonsDeCommande;
         string TVA;
-        bytes32 secret;
+        uint[] bonsDeCommande; //hold receivables.
+        uint[] montant;
+        address client; //supply chain
+        address[] tierOne;
+        bytes32 secret; //activation code
     }
 
     Fournisseur[] public fournisseurs;
     mapping(address => uint) _indexFournisseur;
     uint f = 0;
     
-    // accounts to be activated
-    mapping(bytes32 => uint) public _activation;
-
-    // List of orders
+    mapping(bytes32 => uint) public _activation; // accounts to be activated
+ 
     struct BonDeCommande {
-        uint numBon;
-        address[] proprietaires;
-        uint montant;
+        uint numBon; // Primary key
+        address[] proprietaires; // Supply chain members tier
         uint8 rang;
+        uint montant; // Receivable description
         string description;
         uint echeance;
         uint dateEmission;
@@ -47,58 +46,45 @@ contract bonDeCommande {
     constructor (string memory _nom, string memory _localisation, string memory _tva) public {
 
         //initialisations
-        BonDeCommande memory genesisBon;
-        genesisBon.description = "genesis";
+        BonDeCommande memory genesisBon = BonDeCommande(0, new address[](0), 0, 0, "Genesis", 0, 0);
         bons.push(genesisBon);
-        _indexFournisseur[address(0)] = f;
-        f++;
-        Fournisseur memory genesisFournisseur;
-        genesisFournisseur.nom = "genesis";
-        fournisseurs.push(genesisFournisseur);
         _indexBon[0] = b;
         b++;
         
-        Fournisseur memory nouveauFournisseur;
-        nouveauFournisseur.id = msg.sender;
-        nouveauFournisseur.client = address(0); // client défini sur l'addresse 0
-        nouveauFournisseur.nom = _nom;
-        nouveauFournisseur.localisation = _localisation;
-        nouveauFournisseur.TVA = _tva;
-        fournisseurs.push(nouveauFournisseur);
+        Fournisseur memory genesisFournisseur = Fournisseur(address(0), "Genesis","","", new uint[](0), new uint[](0), address(0), new address[](0) ,0);
+        fournisseurs.push(genesisFournisseur);
+        fournisseurs[0].tierOne.push(msg.sender);
+        _indexFournisseur[address(0)] = f;
+        f++;
+        
+        Fournisseur memory premierFournisseur = Fournisseur(msg.sender, _nom, _localisation, _tva, new uint[](0), new uint[](0), address(0), new address[](0) ,0);
+        fournisseurs.push(premierFournisseur);
+        //fournisseurs[1].tierOne.push(address(0));
         _indexFournisseur[msg.sender] = f;
         f++;
+        
     }
-
 
 /**
      * @dev Public function to generate a new supplier account.
      * Only the bytes32 owner can activate the account, to be forwarded to the supplier.
      * @param _nom The supplier's name
      * @param _localisation The supplier's localisation
-     * @param _TVA The supplier's tva unique number
+     * @param _tva The supplier's tva unique number
      * @param _secret Secret code to be chosen by the client
      * @return secret
      */
-    function creerCompteFournisseur(string memory _nom, string memory _localisation, string memory _TVA, string memory _secret) public returns(bytes32) {
+    function creerCompteFournisseur(string memory _nom, string memory _localisation, string memory _tva, string memory _secret) public returns(bytes32) {
         require(_existsFournisseur(msg.sender),"Vous n'êtes pas enregistré en tant que fournisseur");
         bytes32 secret = keccak256(abi.encodePacked(_secret));
-        Fournisseur memory nouveauFournisseur;
-        nouveauFournisseur.id = address(0);
-        nouveauFournisseur.client = msg.sender;
-        nouveauFournisseur.nom = _nom;
-        nouveauFournisseur.localisation = _localisation;
-        nouveauFournisseur.TVA = _TVA;
-        nouveauFournisseur.secret = secret;
+        
+        Fournisseur memory nouveauFournisseur = Fournisseur(address(0), _nom, _localisation, _tva, new uint[](0), new uint[](0), msg.sender, new address[](0) , secret);
         fournisseurs.push(nouveauFournisseur);
-        _indexFournisseur[msg.sender] = f;
         _activation[secret] = f;
         f++;
-        
         return secret;
-    }
-    
-    function debugSecret_NumBon(string memory debug) public pure returns(bytes32){
-        return keccak256(abi.encodePacked(debug));
+        
+
     }
 
     /**
@@ -107,13 +93,29 @@ contract bonDeCommande {
      * @param _secret The supplier's secret
      * @return The order provider
      */
-    function activateAccount(bytes32 _secret) public returns (address){
+    function activateAccount(bytes32 _secret) public returns (address, address){
         uint by = _activation[_secret];
-        require( by >= 1, "Ce code n'existe pas ou a déjà été utilisé");
+        require(by >= 1, "Ce code n'existe pas ou a déjà été utilisé");
         fournisseurs[by].id = msg.sender;
+        _indexFournisseur[msg.sender] = by;
+        // address[] memory tierOneClient = listeTierOne(fournisseurs[by].client);
+        // tierOneClient[tierOneClient.length - 1] = msg.sender;
+        ajouterTierOne(fournisseurs[_indexFournisseur[msg.sender]].client,msg.sender);
         _activation[_secret] = 0;
-        return fournisseurs[by].client;
-
+        return (fournisseurs[by].client, msg.sender);
+    }
+    
+    //debug
+    function checkTierOneLength(uint index) public view returns(uint){
+        address[] memory tierOneClient = listeTierOne(fournisseurs[index].id);
+        return tierOneClient.length;
+    }
+    
+    
+    //debug
+    function checkLastTierOne(uint index) public view returns(address){
+        address[] memory tierOneClient = listeTierOne(fournisseurs[index].id);
+        return tierOneClient[tierOneClient.length-1];
     }
     
         /**
@@ -143,6 +145,10 @@ contract bonDeCommande {
         return _indexFournisseur[_fournisseur] == 1;
     }
     
+    function ajouterTierOne(address _tierZero, address _tierOne)public {
+        fournisseurs[_indexFournisseur[_tierZero]].tierOne.push(_tierOne);
+    }
+    
     /**
      * @dev Public function to mint a new order.
      * Reverts if the given purchase order ID already exists.
@@ -161,13 +167,8 @@ contract bonDeCommande {
 
         //Création du bon de commande
         BonDeCommande memory nouveauBon;
-        nouveauBon.numBon = _numBon;
+        nouveauBon = BonDeCommande(_numBon, new address[](0), 1, _montant, _description, _echeance, block.timestamp);
         nouveauBon.proprietaires[0] = to;
-        nouveauBon.montant = _montant;
-        nouveauBon.rang = 1;
-        nouveauBon.description = _description;
-        nouveauBon.echeance = _echeance;
-        nouveauBon.dateEmission = block.timestamp;
         bons.push(nouveauBon);
         _indexBon[_numBon] = b;
         b++;
@@ -177,11 +178,12 @@ contract bonDeCommande {
     }
     
         /**
-     * @dev Gets the list of suppliers.
+     * @dev Gets the list of suppliers tier-1 for one given supplier.
+     * @param _fournisseur addresse
      * @return Fournisseur
      */
-    function listeFournisseur() public view returns (Fournisseur[] memory){
-        return fournisseurs;
+    function listeTierOne(address _fournisseur) public view returns (address[] memory){
+        return fournisseurs[_indexFournisseur[_fournisseur]].tierOne;
     }
     
         /**
@@ -198,9 +200,9 @@ contract bonDeCommande {
      * @return uint representing the amount owned by the passed address
      */
      
-    function listeDeCommandes(address _owner) public view returns (uint[][2] memory) {
+    function listeDeCommandes(address _owner) public view returns (uint[] memory, uint[] memory) {
         require(_existsFournisseur(_owner), "Ce fournisseur n'existe pas");
-    return fournisseurs[_indexFournisseur[_owner]].bonsDeCommande;
+    return (fournisseurs[_indexFournisseur[_owner]].bonsDeCommande, fournisseurs[_indexFournisseur[_owner]].montant);
     }
 
 
@@ -220,8 +222,7 @@ contract bonDeCommande {
      * @return uint longueur
      */
     function _longueurCarnetDeCommande(address _holder) public view returns(uint){
-        uint[][2] memory carnetDeCommande = listeDeCommandes(_holder);
-        return carnetDeCommande[0].length;
+        return fournisseurs[_indexFournisseur[_holder]].bonsDeCommande.length;
     }
 
     //     return carnetDeCommande.length; --> retourne toujours 2
@@ -234,11 +235,13 @@ contract bonDeCommande {
      * @return bool true or false
      */
     function checkIfHeldBon(address _holder, uint _numBon) public view returns (bool, uint){ //internal
-        uint[][2] memory carnetDeCommande = listeDeCommandes(_holder);
+        uint[] memory num;
+        uint[] memory montant;
+        (num, montant) = listeDeCommandes(_holder);
         bool check;
         uint index = 0;
         for(uint i = 0; i < _longueurCarnetDeCommande(_holder); i++ ){
-            if(carnetDeCommande[0][i] == _numBon){
+            if(num[i] == _numBon){
                 check = true;
                 index = i;
             }
@@ -254,11 +257,13 @@ contract bonDeCommande {
      * @return bool true or false
      */
     function checkIfHeldBonEtMontant(address _holder, uint _numBon, uint _montant) internal view returns (bool, uint){
-        uint[][2] memory carnetDeCommande = listeDeCommandes(_holder);
+        uint[] memory num;
+        uint[] memory montant;
+        (num, montant) = listeDeCommandes(_holder);
         bool check;
         uint index = 0;
         for(uint i = 0; i < _longueurCarnetDeCommande(_holder); i++ ){
-            if(carnetDeCommande[0][i] == _numBon && carnetDeCommande[1][i] >= _montant){
+            if(num[i] == _numBon && montant[i] >= _montant){
                 check = true;
                 index = i;
             }
@@ -273,8 +278,8 @@ contract bonDeCommande {
      * @param to address receiving
      */
     function nouvelleCommande(address to, uint _numBon, uint _montant) public{ //internal
-        fournisseurs[_indexFournisseur[to]].bonsDeCommande[0].push(_numBon);
-        fournisseurs[_indexFournisseur[to]].bonsDeCommande[1].push(_montant);
+        fournisseurs[_indexFournisseur[to]].bonsDeCommande.push(_numBon);
+        fournisseurs[_indexFournisseur[to]].montant.push(_montant);
     }
     
     
@@ -284,18 +289,20 @@ contract bonDeCommande {
      * @param from address sending
      */
     function supprimerCommande(address from, uint _index) public view{ //internal
-        uint[][2] memory carnetDeCommande = listeDeCommandes(from);
-        
+        uint[] memory num;
+        uint[] memory montant;
+        (num, montant) = listeDeCommandes(from);
+
         uint long = _longueurCarnetDeCommande(from);
         
         //n'intervient que dans le cas d'un transfert donc long != 0
         if (long == 1){
-          delete carnetDeCommande[0][_index];
-          delete carnetDeCommande[0][_index];
+          delete num[_index];
+          delete montant[_index];
         }else{
         
-        carnetDeCommande[0][_index] = carnetDeCommande[0][long-1];
-        carnetDeCommande[1][_index] = carnetDeCommande[1][long-1];
+        num[_index] = num[long-1];
+        montant[_index] = montant[long-1];
         }
     }
     
@@ -313,19 +320,21 @@ contract bonDeCommande {
         uint index;
         (check, index) = checkIfHeldBon(to, _numBon);
         if (check){                                     //cas de possesion du bon
-            fournisseurs[_indexFournisseur[to]].bonsDeCommande[1][index] += _montant;
+            fournisseurs[_indexFournisseur[to]].montant[index] += _montant;
         
         }else{                                          //cas de non possession du bon
             nouvelleCommande(to,_numBon, _montant);
         }
         
         // Partie soustraction
-        uint[][2] memory carnetDeCommande = listeDeCommandes(from);
+        uint[] memory num;
+        uint[] memory montant;
+        (num, montant) = listeDeCommandes(from);
         
-        if(carnetDeCommande[1][index] == _montant){     //transfert de 100% du bon
+        if(montant[index] == _montant){     //transfert de 100% du bon
             supprimerCommande(from, _index);
         }else{                                          //transfert d'une partie du bon
-            carnetDeCommande[1][index] -= _montant;
+            montant[index] -= _montant;
         }
         
         
