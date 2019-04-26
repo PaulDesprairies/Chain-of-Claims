@@ -1,3 +1,7 @@
+var dapp;
+var user;
+
+
 async function goToOperations(){
     await window.location.assign('operations.html');
 }
@@ -11,8 +15,7 @@ function goToIndex(){
 // retourne 1 si l'utilisateur est un fournisseur non en haut de chaîne
 // retroune 2 si l'utilisateur n'est pas un fournisseur enregistré
 async function qualification(){
-dapp = await load()
-var user = await dapp.user;
+
 var isSupplier = await dapp.coc._existsFournisseur(user);
     if (isSupplier){
         var isAdmin = await dapp.coc._isHigherSupplier(user);
@@ -27,12 +30,13 @@ var isSupplier = await dapp.coc._existsFournisseur(user);
 }
 
 
-
 async function redirection(){
-        var quali = await qualification();
+    dapp = await load();
+    user = await dapp.user;
+    var quali = await qualification();
 
     if (quali == 0){
-        alert("bienvenue admin")
+        // alert("bienvenue admin")
         //affiche fournisseurs
         //propose un forward
         //liste bons
@@ -44,6 +48,20 @@ async function redirection(){
         //affiche fournisseurs
         //proposer une nouvelle commande
     }
+}
+
+async function nouveauFournisseur(){
+    let _nom = document.getElementById("nom").value ;
+    let _location = document.getElementById("location").value;
+    let _tva = document.getElementById("tva").value;
+    let _secret = document.getElementById("secret").value;
+    let secret = await dapp.coc.creerCompteFournisseur(_nom, _location, _tva, _secret);
+    console.log(secret)
+    return secret;
+}
+
+function afficherFournisseurs(){
+    alert(dapp.coc.listeTierOne(dapp.user))
 }
 
 async function operations(){
