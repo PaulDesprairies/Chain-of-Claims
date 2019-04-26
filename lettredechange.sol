@@ -1,10 +1,8 @@
 pragma solidity ^0.5.6;
 pragma experimental ABIEncoderV2;
 
-
 import "github.com/OpenZeppelin/openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "github.com/OpenZeppelin/openzeppelin-solidity/contracts/utils/Address.sol";
-
 
 contract bonDeCommande {
     using SafeMath for uint;
@@ -25,7 +23,7 @@ contract bonDeCommande {
     Fournisseur[] public fournisseurs;
     mapping(address => uint) _indexFournisseur;
     uint f = 0;
-    
+
     mapping(bytes32 => uint) public _activation; // accounts to be activated
  
     struct BonDeCommande {
@@ -44,7 +42,6 @@ contract bonDeCommande {
     
     
     constructor (string memory _nom, string memory _localisation, string memory _tva) public {
-
         //initialisations
         BonDeCommande memory genesisBon = BonDeCommande(0, new address[](0), 0, 0, "Genesis", 0, 0);
         bons.push(genesisBon);
@@ -61,7 +58,6 @@ contract bonDeCommande {
         fournisseurs.push(premierFournisseur);
         _indexFournisseur[msg.sender] = f;
         f++;
-        
     }
 
 /**
@@ -82,8 +78,6 @@ contract bonDeCommande {
         _activation[secret] = f;
         f++;
         return secret;
-        
-
     }
 
     /**
@@ -146,21 +140,25 @@ contract bonDeCommande {
      * @param _numBon uint ID of the order to be minted
      * @param _montant valeur du bon
      * @param _description description du bon
-     * @param _echeance echeance du remboursement de la créance comptablement généré par le bon de commande
+     * @param _echeance_jours echeance du remboursement de la créance comptablement généré par le bon de commande
      */
      
-    function _mint(address to, uint _numBon, uint _montant, string memory _description, uint _echeance) public {
+    function _mint(address to, uint _numBon, uint _montant, string memory _description, uint _echeance_jours) public {
         require(_isHigherSupplier(msg.sender),"Vous devez être le fournisseur en haut de chaîne");
         require(_existsFournisseur(to),"Veuillez enregistrer votre fournisseur d'abord ou lui laisser le temps de s'inscrire");
         require(to != msg.sender, "Vous ne pouvez pas vous auto-attribuer un bon");
         require(!_existsBon(_numBon),"Ce numéro de bon existe déjà");
+        
+        //conversion de l'échéance en donnée comparable à block.timestamp
+        _echeance_jours = _echeance_jours * 24 * 60 * 60;
+        _echeance_jours += block.timestamp;
 
         //Création du bon de commande
         BonDeCommande memory nouveauBon;
-        nouveauBon = BonDeCommande(_numBon, new address[](0), 1, _montant, _description, _echeance, block.timestamp);
+        nouveauBon = BonDeCommande(_numBon, new address[](0), 1, _montant, _description, _echeance_jours, block.timestamp);
         bons.push(nouveauBon);
         _indexBon[_numBon] = b;
-        bons[_indexBon[b]].proprietaires.push(to);
+        bons[_indexBon[_numBon]].proprietaires.push(to);
         b++;
         
         
@@ -197,17 +195,18 @@ contract bonDeCommande {
     }
 
 
-        /**
+    /**
      * @dev Gets the owner of the specified order number.
      * @param _numBon uint ID of the purchase order to query the owner of
      * @return address currently marked as the owner of the given purchase order ID
      */
     function listeDeDetenteurs(uint _numBon) public view returns (address[] memory) {
+        require(_existsBon(_numBon), "Ce bon n'existe pas");
         address[] memory owner = bons[_indexBon[_numBon]].proprietaires;
         return owner;
     }
     
-        /**
+    /**
      * @dev Gets longueur cdc.
      * @param _holder adresse
      * @return uint longueur
@@ -263,7 +262,7 @@ contract bonDeCommande {
     }
     
         /**
-     * @dev Create order in suppliers' book in case they did not have such an order before.
+     * @dev Create order in suppliers' book (part order) in case they did not have such an order before.
      * @param _numBon order
      * @param _montant montant
      * @param to address receiving
@@ -271,68 +270,114 @@ contract bonDeCommande {
     function nouvelleCommande(address to, uint _numBon, uint _montant) public{ //internal
         fournisseurs[_indexFournisseur[to]].bonsDeCommande.push(_numBon);
         fournisseurs[_indexFournisseur[to]].montant.push(_montant);
+        bons[_indexBon[_numBon]].proprietaires.push(to);
     }
     
     
      /**
      * @dev Delete order in suppliers' book in case they forwarded the whole order.
-     * @param _index order index
+     * @param _indexB order index
      * @param from address sending
      */
-    function supprimerCommande(address from, uint _index) public view{ //internal
+    function supprimerCommandeBon(address from, uint _indexB) public view{ //internal
         uint[] memory num;
         uint[] memory montant;
         (num, montant) = listeDeCommandes(from);
-
-        uint long = _longueurCarnetDeCommande(from);
+        uint nbBons = _longueurCarnetDeCommande(from);
         
-        //n'intervient que dans le cas d'un transfert donc long != 0
-        if (long == 1){
-          delete num[_index];
-          delete montant[_index];
-        }else{
-        
-        num[_index] = num[long-1];
-        montant[_index] = montant[long-1];
+        if (nbBons - 1 != _indexB){
+            num[_indexB] = num[nbBons-1];
+            montant[_indexB] = montant[nbBons-1];
         }
+            delete num[nbBons - 1];
+            delete montant[nbBons - 1];
     }
     
-    
        /**
-     * @dev Check whether the supplier detains the right order, at the right amount.
+     * @dev Delete order in suppliers' book (part supplier) in case they forwarded the whole order.
+     * @param from address sending
+     * @param _numBon order id
+     */
+    function supprimerCommandeFournisseur(address from, uint _numBon) public view{ //internal
+        address[] memory detenteurs = listeDeDetenteurs(_numBon);
+        uint nbDetenteurs = detenteurs.length;
+        uint _indexF;
+            
+            for(uint i = 0; i < nbDetenteurs; i++){
+                if(detenteurs[i] == from){
+                    _indexF = i;
+                }
+            }
+            
+            if(nbDetenteurs - 1 != _indexF){
+                detenteurs[_indexF] = detenteurs[nbDetenteurs-1];
+            }
+            
+            delete detenteurs[nbDetenteurs-1];
+        }
+        
+       /**
+     * @dev Delete order in suppliers' book in case they forwarded the whole order.
+     * @param from address sending
+     * @param _numBon order id
+     */
+        function supprimerCommande(address from, uint _indexB, uint _numBon) public view{ //internal
+            supprimerCommandeBon(from, _indexB);
+            supprimerCommandeFournisseur(from, _numBon);
+        }
+
+    
+    /**
+     * @dev Transfer additinal part.
      * @param _numBon order id
      * @param _montant order value
      * @param to address receiving
-     * @param from address sending
      */
-    function transfer(address to, address from, uint _index, uint _numBon, uint _montant) public{ //internal
-        // Partie addition
-        bool check;
-        uint index;
-        (check, index) = checkIfHeldBon(to, _numBon);
-        if (check){                                     //cas de possesion du bon
-            fournisseurs[_indexFournisseur[to]].montant[index] += _montant;
+    function transferAddition(address to, uint _numBon, uint _montant) public{ //internal
+        bool checkTo;
+        uint indexTo;
+        (checkTo, indexTo) = checkIfHeldBon(to, _numBon);
+        if (checkTo){                                     //cas de possesion du bon
+            fournisseurs[_indexFournisseur[to]].montant[indexTo] += _montant;
         
         }else{                                          //cas de non possession du bon
             nouvelleCommande(to,_numBon, _montant);
         }
-        
-        // Partie soustraction
+    }
+
+    /**
+     * @dev Transfer soustraction part.
+     * @param _montant order value
+     * @param from address sending
+     */
+    function transferSoustraction(address from, uint _numBon, uint _indexFrom, uint _montant) public view{ //internal
         uint[] memory num;
         uint[] memory montant;
         (num, montant) = listeDeCommandes(from);
         
-        if(montant[index] == _montant){     //transfert de 100% du bon
-            supprimerCommande(from, _index);
+        if(montant[_indexFrom] == _montant){                 //transfert de 100% du bon
+            supprimerCommande(from, _indexFrom, _numBon);
         }else{                                          //transfert d'une partie du bon
-            montant[index] -= _montant;
+            montant[_indexFrom] -= _montant;
         }
-        
-        
-        
     }
-        /**
-     * @dev Check whether the supplier detains the right order, at the right amount.
+
+    /**
+     * @dev Transfer an order from a supplier to another
+     * @param _numBon order id
+     * @param _montant order value
+     * @param _indexFrom index du bon de l'envoyeur
+     * @param to address receiving
+     * @param from address sending
+     */
+    function transfer(address to, address from, uint _indexFrom, uint _numBon, uint _montant) public{ //internal
+        transferAddition(to, _numBon, _montant);
+        transferSoustraction(from, _indexFrom, _numBon, _montant);
+
+    }
+    
+     /**
+     * @dev Reverse factoring.
      * @param to address receiving
      * @param _numBon order id
      * @param _montant order value
@@ -347,6 +392,12 @@ contract bonDeCommande {
         transfer(to, msg.sender, index, _numBon, _montant);
     }
 
+     /**
+     * @dev Classic factoring.
+     * @param from address sending
+     * @param _numBon order id
+     * @param _montant order value
+     */
     function pullBon(uint _numBon, uint _montant, address from) public{
         require(!_isHigherSupplier(msg.sender) || _existsFournisseur(msg.sender),"Vous n'êtes pas enregistré en tant que fournisseur");
         require(fournisseurs[_indexFournisseur[msg.sender]].client == from, "Vous ne pouvez vous faire parvenir des fonds qu'à votre client");
