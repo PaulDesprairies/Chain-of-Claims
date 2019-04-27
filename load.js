@@ -1,5 +1,3 @@
-let dapp;
-
 async function load() {
     const abi = [
         {
@@ -22,7 +20,7 @@ async function load() {
                     "type": "string"
                 },
                 {
-                    "name": "_echeance",
+                    "name": "_echeance_jours",
                     "type": "uint256"
                 }
             ],
@@ -45,8 +43,30 @@ async function load() {
                 {
                     "name": "",
                     "type": "address"
+                },
+                {
+                    "name": "",
+                    "type": "address"
                 }
             ],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "constant": false,
+            "inputs": [
+                {
+                    "name": "_tierZero",
+                    "type": "address"
+                },
+                {
+                    "name": "_tierOne",
+                    "type": "address"
+                }
+            ],
+            "name": "ajouterTierOne",
+            "outputs": [],
             "payable": false,
             "stateMutability": "nonpayable",
             "type": "function"
@@ -77,7 +97,7 @@ async function load() {
                     "type": "string"
                 },
                 {
-                    "name": "_TVA",
+                    "name": "_tva",
                     "type": "string"
                 },
                 {
@@ -174,7 +194,7 @@ async function load() {
                     "type": "address"
                 },
                 {
-                    "name": "_index",
+                    "name": "_indexFrom",
                     "type": "uint256"
                 },
                 {
@@ -187,6 +207,28 @@ async function load() {
                 }
             ],
             "name": "transfer",
+            "outputs": [],
+            "payable": false,
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "constant": false,
+            "inputs": [
+                {
+                    "name": "to",
+                    "type": "address"
+                },
+                {
+                    "name": "_numBon",
+                    "type": "uint256"
+                },
+                {
+                    "name": "_montant",
+                    "type": "uint256"
+                }
+            ],
+            "name": "transferAddition",
             "outputs": [],
             "payable": false,
             "stateMutability": "nonpayable",
@@ -321,12 +363,12 @@ async function load() {
                     "type": "uint256"
                 },
                 {
-                    "name": "montant",
-                    "type": "uint256"
-                },
-                {
                     "name": "rang",
                     "type": "uint8"
+                },
+                {
+                    "name": "montant",
+                    "type": "uint256"
                 },
                 {
                     "name": "description",
@@ -376,19 +418,31 @@ async function load() {
             "constant": true,
             "inputs": [
                 {
-                    "name": "debug",
-                    "type": "string"
+                    "name": "_holder",
+                    "type": "address"
+                },
+                {
+                    "name": "_numBon",
+                    "type": "uint256"
+                },
+                {
+                    "name": "_montant",
+                    "type": "uint256"
                 }
             ],
-            "name": "debugSecret_NumBon",
+            "name": "checkIfHeldBonEtMontant",
             "outputs": [
                 {
                     "name": "",
-                    "type": "bytes32"
+                    "type": "bool"
+                },
+                {
+                    "name": "",
+                    "type": "uint256"
                 }
             ],
             "payable": false,
-            "stateMutability": "pure",
+            "stateMutability": "view",
             "type": "function"
         },
         {
@@ -406,10 +460,6 @@ async function load() {
                     "type": "address"
                 },
                 {
-                    "name": "client",
-                    "type": "address"
-                },
-                {
                     "name": "nom",
                     "type": "string"
                 },
@@ -422,8 +472,118 @@ async function load() {
                     "type": "string"
                 },
                 {
+                    "name": "client",
+                    "type": "address"
+                },
+                {
                     "name": "secret",
                     "type": "bytes32"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [
+                {
+                    "name": "_fournisseur",
+                    "type": "address"
+                }
+            ],
+            "name": "fournisseursAttributes",
+            "outputs": [
+                {
+                    "components": [
+                        {
+                            "name": "id",
+                            "type": "address"
+                        },
+                        {
+                            "name": "nom",
+                            "type": "string"
+                        },
+                        {
+                            "name": "localisation",
+                            "type": "string"
+                        },
+                        {
+                            "name": "TVA",
+                            "type": "string"
+                        },
+                        {
+                            "name": "bonsDeCommande",
+                            "type": "uint256[]"
+                        },
+                        {
+                            "name": "montant",
+                            "type": "uint256[]"
+                        },
+                        {
+                            "name": "client",
+                            "type": "address"
+                        },
+                        {
+                            "name": "tierOne",
+                            "type": "address[]"
+                        },
+                        {
+                            "name": "secret",
+                            "type": "bytes32"
+                        }
+                    ],
+                    "name": "",
+                    "type": "tuple"
+                }
+            ],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [
+                {
+                    "name": "_numBon",
+                    "type": "uint256"
+                }
+            ],
+            "name": "listeBons",
+            "outputs": [
+                {
+                    "components": [
+                        {
+                            "name": "numBon",
+                            "type": "uint256"
+                        },
+                        {
+                            "name": "proprietaires",
+                            "type": "address[]"
+                        },
+                        {
+                            "name": "rang",
+                            "type": "uint8"
+                        },
+                        {
+                            "name": "montant",
+                            "type": "uint256"
+                        },
+                        {
+                            "name": "description",
+                            "type": "string"
+                        },
+                        {
+                            "name": "echeance",
+                            "type": "uint256"
+                        },
+                        {
+                            "name": "dateEmission",
+                            "type": "uint256"
+                        }
+                    ],
+                    "name": "",
+                    "type": "tuple"
                 }
             ],
             "payable": false,
@@ -446,12 +606,12 @@ async function load() {
                             "type": "address[]"
                         },
                         {
-                            "name": "montant",
-                            "type": "uint256"
-                        },
-                        {
                             "name": "rang",
                             "type": "uint8"
+                        },
+                        {
+                            "name": "montant",
+                            "type": "uint256"
                         },
                         {
                             "name": "description",
@@ -486,7 +646,11 @@ async function load() {
             "outputs": [
                 {
                     "name": "",
-                    "type": "uint256[][2]"
+                    "type": "uint256[]"
+                },
+                {
+                    "name": "",
+                    "type": "uint256[]"
                 }
             ],
             "payable": false,
@@ -501,7 +665,7 @@ async function load() {
                     "type": "uint256"
                 }
             ],
-            "name": "listeDeDetenteur",
+            "name": "listeDeDetenteurs",
             "outputs": [
                 {
                     "name": "",
@@ -514,42 +678,17 @@ async function load() {
         },
         {
             "constant": true,
-            "inputs": [],
-            "name": "listeFournisseur",
+            "inputs": [
+                {
+                    "name": "_fournisseur",
+                    "type": "address"
+                }
+            ],
+            "name": "listeTierOne",
             "outputs": [
                 {
-                    "components": [
-                        {
-                            "name": "id",
-                            "type": "address"
-                        },
-                        {
-                            "name": "client",
-                            "type": "address"
-                        },
-                        {
-                            "name": "nom",
-                            "type": "string"
-                        },
-                        {
-                            "name": "localisation",
-                            "type": "string"
-                        },
-                        {
-                            "name": "bonsDeCommande",
-                            "type": "uint256[][2]"
-                        },
-                        {
-                            "name": "TVA",
-                            "type": "string"
-                        },
-                        {
-                            "name": "secret",
-                            "type": "bytes32"
-                        }
-                    ],
                     "name": "",
-                    "type": "tuple[]"
+                    "type": "address[]"
                 }
             ],
             "payable": false,
@@ -564,7 +703,11 @@ async function load() {
                     "type": "address"
                 },
                 {
-                    "name": "_index",
+                    "name": "_indexB",
+                    "type": "uint256"
+                },
+                {
+                    "name": "_numBon",
                     "type": "uint256"
                 }
             ],
@@ -573,10 +716,72 @@ async function load() {
             "payable": false,
             "stateMutability": "view",
             "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [
+                {
+                    "name": "from",
+                    "type": "address"
+                },
+                {
+                    "name": "_indexB",
+                    "type": "uint256"
+                }
+            ],
+            "name": "supprimerCommandeBon",
+            "outputs": [],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [
+                {
+                    "name": "from",
+                    "type": "address"
+                },
+                {
+                    "name": "_numBon",
+                    "type": "uint256"
+                }
+            ],
+            "name": "supprimerCommandeFournisseur",
+            "outputs": [],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "constant": true,
+            "inputs": [
+                {
+                    "name": "from",
+                    "type": "address"
+                },
+                {
+                    "name": "_numBon",
+                    "type": "uint256"
+                },
+                {
+                    "name": "_indexFrom",
+                    "type": "uint256"
+                },
+                {
+                    "name": "_montant",
+                    "type": "uint256"
+                }
+            ],
+            "name": "transferSoustraction",
+            "outputs": [],
+            "payable": false,
+            "stateMutability": "view",
+            "type": "function"
         }
     ]
 
-    const addressContract = "0x1f41fcea78bbc5d53c5ae33467b1ac91a09eee8c" //Remix #1 défi2
+    const addressContract = "0xaac867a7abcc77624a5933f2c15a2b0c46c8528c" //Remix
 
 
     try {
