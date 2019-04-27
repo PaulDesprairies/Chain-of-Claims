@@ -3,11 +3,11 @@ var user;
 
 
 async function goToOperations(){
-    await window.location.assign('operations.html');
+  await window.location.assign('operations.html');
 }
 
-function goToIndex(){
-  window.location.replace('index.html');
+async function goToIndex(){
+  await window.location.replace('index.html');
 }
 
 
@@ -31,22 +31,24 @@ var isSupplier = await dapp.coc._existsFournisseur(user);
 
 
 async function redirection(){
+
     dapp = await load();
     user = await dapp.user;
     var quali = await qualification();
 
     if (quali == 0){
-        // alert("bienvenue admin")
-        //affiche fournisseurs
-        //propose un forward
-        //liste bons
+        document.getElementById("bienvenue").innerHTML = "bienvenue admin";
+        afficherFournisseurs();
+        //proposer une nouvelle commande
     }
     else if (quali == 1){
-        alert("Vous n'êtes pas un fournisseur enregistré");
+      document.getElementById("bienvenue").innerHTML = "Vous n'avez pas de droit d'accès à cette page.";
     }else if (quali == 2){
-        alert("bienvenue fournisseur");
-        //affiche fournisseurs
-        //proposer une nouvelle commande
+      document.getElementById("bienvenue").innerHTML = "bienvenue fournisseur";
+      afficherFournisseurs();
+      //affichage de bons
+      //propose un forward
+
     }
 }
 
@@ -54,14 +56,99 @@ async function nouveauFournisseur(){
     let _nom = document.getElementById("nom").value ;
     let _location = document.getElementById("location").value;
     let _tva = document.getElementById("tva").value;
-    let _secret = document.getElementById("secret").value;
-    let secret = await dapp.coc.creerCompteFournisseur(_nom, _location, _tva, _secret);
-    console.log(secret)
-    return secret;
+    if (_nom == null || _location == null || _tva == null || _nom == "" || _location == "" || _tva == ""){
+      alert("Merci de renseigner une valeur pour le nom, le lieu et la TVA");
+      return;
+    }
+    let _secret;
+    _secret = secret();
+    alert("test");
+    let nouveauFournisseur = await dapp.coc.creerCompteFournisseur(_nom, _location, _tva, _secret);
+    console.log(nouveauFournisseur)
+    alert("Nouveau compte en attente de validation.");
+    return nouveauFournisseur;
 }
 
-function afficherFournisseurs(){
-    alert(dapp.coc.listeTierOne(dapp.user))
+function secret() {
+  let txt;
+  let secretCode = prompt("Entrez un code secret:", "code");
+  if (secretCode == null || secretCode == "") {
+    txt = "Annulation de l'opération";
+  } else {
+    txt = "Secret ok";
+  }
+  console.log(txt);
+  return secretCode;
+}
+
+async function activateAccount(){
+    let dapp = await load();    
+    let _secretHash = document.getElementById("secretHash").value;
+    let secretHash = await dapp.coc.activateAccount(_secretHash);
+    console.log(secretHash);
+    goToOperations();
+}
+
+async function afficherFournisseurs(){
+    document.getElementById("tableauDesFournisseurs").innerHTML = "Veuillez patienter...";
+    const f = document.createDocumentFragment();
+    let tierOne;
+    tierOne = await dapp.coc.listeTierOne(user);
+    console.log(tierOne);
+    let tableau = `
+    <table>
+    <thead>
+      <tr>
+        <th>Index</th>
+        <th>Nom</th>
+        <th>Localisation</th>
+        <th>TVA</th>
+        <th>Contact</th>
+        <th>Bons</th>
+        <th>Tier One</th>
+      </tr>
+    </thead>`
+    for (x of tierOne){
+      let f ;
+        f = await dapp.coc.fournisseursAttributes(x);
+        tableau +=
+          `<tbody class="thead-light">
+            <tr>
+              <th scope="row">${tierOne.indexOf(x) + 1}</th>
+              <td>${f.nom}</td>
+              <td>${f.localisation}</td>
+              <td>${f.TVA}</td>
+              <td>
+                <span><button onclick="contacter()">Contacter</span>
+              </td>
+              <td>
+                <span><button onclick="consulterTierOne()">Consulter</span>
+              </td>
+              <td>
+                <span><button onclick="consulterBons()">Consulter</span>
+              </td>
+
+
+              `
+    }
+    tableau += `<tbody>
+    <tr>
+      <td><span><button onclick="nouveauFournisseur()">Ajouter un nouveau fournisseur</span></td>
+      <td><input type ="text" id ="nom" placeholder="Nom"></input></td>
+      <td><input type ="text" id ="location" placeholder="Location"></input></td>
+      <td><input type ="text" id ="tva" placeholder="n° TVA"></input></td>
+      <td><input type ="text" id ="mail" placeholder="supplier@mail.here"></input></td>
+      <td></td>
+      <td></td>
+      </tr>
+    </tbody>
+    </table>`
+
+    doc = document.createElement("div");
+            doc.innerHTML = tableau;
+            f.appendChild(doc);
+            document.getElementById("tableauDesFournisseurs").innerHTML = "";
+            document.getElementById("tableauDesFournisseurs").appendChild(f);
 }
 
 async function operations(){
