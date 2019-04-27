@@ -1,0 +1,32 @@
+2000s
+Mastodontes qui financent des entreprises plutôt grosses.
+Avantages : financement, protection du risque, recentrage sur activités.
+
+2010s
+1/ Financement accéléré (sous 48h)
+2/ Cas par cas Démultiplication des offres (affacturage confidentiels, de poste, inversé, des achats etc)
+3/ notion d'indépendance vis-a-vis de sa banque
+
+2015s
+1/ Financement accéléré (sous 24h)
+2/ Extension avec de nouvelles offres, reseaux de commercialisations.
+3/ digitalisation, simplification pour un gain de temps max
+
+
+--> Conclusion : les offres de valeurs n'ont pas significativement changé. Le factor évolue vers deux situations :
+    a/ être de plus en plus en phase avec le besoin du client
+    b/ être de plus en plus seamless pour demander un minimum d'énergie au client
+    c/ demande d'une sorte d'indépence de réseaux bancaires
+    e/ dimution du délai de financement
+
+
+Valeur ajoutée coc : b/
+Les clients se voient proposer 3 sites (ou au moins trois typologies de process) (c'est énorme !)
+1/ envoi factures
+2/ financement
+3/ suivi factures
+
+Encore plus criant dans le cas d'un affacturage :
+1/ Déployer une solution affacturage
+2/ Plusieurs mois pour mettre en place le système d'info etc
+3/ Gérer les remontées d'info pour chaque fournisseur

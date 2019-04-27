@@ -154,7 +154,7 @@ Concurrence des fintechs :
 2/ Promesse d'un financement sous les 48h
 
 --> Segment du financement ponctuel vs (financement récurrent ?)
-Marché de l'affacturage en France ~ 44md€, dont 5% à 10% d'affacturage inversé
+Marché de l'affacturage en France ~ 30md€ (6% des postes clients), dont 5% à 10% d'affacturage inversé
 
 Vrais prb de communication entre entreprises et factors, appel à des tiers pour extraire des données d'un système d'info et/ou d'un courtier en affacturage.
 Résolution de ce prb vers la digitalisation : rendre l'affacturage à nouveau simple. ****HYPOTHESE 1*****
@@ -258,4 +258,210 @@ Kyriba : taux de financement basé sur la sovabilité de auchan
 
 
 ***** Thierry Millon *****
+boarf
 
+***** la créance numérique pdf *****
+Reduire le risque lié à la trésorie
+Réduire l'incertitude sur les paiements et les délais
+Accélérer recouvrement
+Vitesse des opérations financières
+Utilisation de la créance très rapide
+Créance numériques : donner rapidement et surement de précieuses marges de manoeuvre.
+ASSURANCE CREDIT A ASSOCIER AU BON SELON LA SOLVABILITE DE L'EMETTEUR
+
+Solde commercial (jour) :  (encours client - encours fournisseur) / (ca / an) / 365
+
+Crédit entreprise en France : environ 500mds Euro. Financement par crédit via instit bancaires (+++) ou actionnaires. Plus souvent
+Principaux produits proposés par institutions bancaires :
+1/ Découvert (number one parce que simple et rapide à mettre en oeuvre ! mais limité) ***** HYPOTHESE III *****
+2/ Escompte + effets de commerce (billets à ordre ou traites) (-)
+3/ Affacturage (++)
+4/ La Dailly (-)
+
+Cessions de créances (affacturage + dailly) = 5% (quasi que affacturage) du crédit inter entreprise = 26mds
+Affacturage de + en + concurrentiel grâce aux économies d'échelles
+Pas du tout utilisé par petites entreprises : barrière à l'adoption jusqu'à récemment avec le e-affacturage :
+Simplicité de mise en place etc.
+
+
+
+Loi LME 2008 : 60 jours max, voire 30 jours
+Retards de paiement moyen : 13 jours. Pénalités / facture + intérêts de retard
+
+A FINIR
+
+
+***** Les Echos *****
+https://www.lesechos.fr/idees-debats/cercle/opinion-laffacturage-marche-en-plein-boom-142945
+affacturage : 30mds en France
+découvert : 26mds
+dailly + escompte : 14,5md
+
+L'affacturage de demain : seamless, déplafonné, systémique.
+
+***** Maddyness *****
+https://www.maddyness.com/2018/07/09/blockchain-dematerialisation-commerce-b2b-charles-ruelle/
+Valeur ajoutée blockchain
++ de sécurité (partage en temps réel, court circuitage de process)
++ de rapidité et d'efficacité
++ 
+
+
+***** Cédric Teissier *****
+https://www.cbanque.com/credit/actualites/69038/affacturage-quand-les-fintechs-depoussierent-les-services-pour-les-pme
+Monter un dossier affacturage : de 5 à 6 semaines
+
+
+
+
+***** recap ****
+affacturage fort croissance
+fintech : donner accès à l'affacturage aux PME
+
+affacturage inversé : super cool mais que aux grandes entreprises.
+Donner à tous l'accès à l'affacturage inversé
+
+
+***** Nouvel économiste - Affacturage inversé / quali*****
+https://www.lenouveleconomiste.fr/lesdossiers/affacturage-inverse-un-mariage-de-raison-63672/
+Engagement / prise de conscience :
+les grands groupes doivent " travailler sur leur écosystème fournisseurs et leur chaîne d’approvisionnement, ainsi que sur la fluidité de leur processus de gestion"
+“Des secteurs industriels qui ont un cycle de fabrication plus long, des temps de transports importants, ou des métiers qui nécessitent de réaliser des stocks peuvent être particulièrement intéressés par l’affacturage inversé, car il permet d’alléger les besoins en trésorerie du donneur d’ordres”
+"Le fournisseur a ainsi l’assurance d’être payé de manière parfaitement prévisible, ce qui réduit les risques et ne détériore pas ses soldes intermédiaires de gestion. De plus, le coût de ce service est souvent bien inférieur à ce que l’entreprise paierait si elle devait financer seule sa trésorerie"
+“Les banques ne prennent aucun risque avec les TPE”
+“Pour les grands groupes, l’affacturage inversé constitue aussi une bonne façon de sécuriser leurs approvisionnements, voire d’afficher leur engagement en s’inscrivant dans une politique de RSE”
+“Les TPE ou PME peuvent cependant se montrer frileuses qu’une partie de leur CA ainsi que la gestion de leurs factures dépendent de l’un de leur principal donneur d’ordres”
+Taille critique nécessaire “Car il est nécessaire de réaliser du développement informatique pour calibrer les échanges entre le client et le fournisseur”
+Pourrait progressivement s'ouvrir aux entreprises de moins de 30 millions de chiffre d'affaire
+“La seule limite est la solvabilité de l’acheteur. Mais il est possible que les entreprises mettent en place une à plusieurs assurances crédit afin de couvrir le montant de leurs créances fournisseurs”
+
+Aujourd'hui, vrai projet d'entreprise :
+1/ Checker la santé financière des fournisseurs (peut prendre des mois)
+2/ mise en place d'un système d'info, formations, validation des factures etc
+
+
+Fludification de processes
+DAF / Achat / Informatique
+
+
+***** Coface Interview du directeur général *****
+513 mds € de créances
+
+1000 impayés ou sinistres / semaine, 50000 clients dans le monde (20 ans en moyenne)
+Coface : garantie que le client va bien payer. Bilan insuffisant. Top : environnement.
+
+comment le bilan correspond au choc qui va se produire.
+1/ Choc 1 : rupture tech
+2/ Choc 2 : risques éco (crise 2008)
+3/ Choc 3 : politique (Brexit...)
+
+Sécurisation du business à l'export. Connaissance du client et surveillance de leurs activités.
+Pas d'impayés depuis 2008 sur les clients couverts.
+Complémentaire de l'affacturage : meilleurs position de négo.
+Outil de pilotage pour anticiper le risque client.
+Structurer et assurer le poste client
+Cemeka : centrale d'assurances-crédit pour les industries de l'automobile, à 20% avec la coface
+
+
+
+***** CMC CIC Factor *****
+https://www.cmcic-factor.com/partage/fr/CC/CMCIC-FACTOR/telechargement/680004_FACTORIZON_CIC.pdf
+Financement immédiat + financement garanti + mains libres
+
+Transmission de factures avec un site web :
+0/ connection (id / mdp)
+1/ IMPORTS DE PIECES
+    a/ Vos cessions
+    b/ Rubrique import de pieces, cliquer sur "Facture"
+    c/ proprietés / import de pdfs
+2/ REMISE EN COURS
+    a/ check facture, remplissage (numéro pièce, mode de paiement, numéro commande client, référence, date pièce, raison sociale, montant, échéance, code client...)
+    b/ joindre pièces justificatives (bons de commandes, bons de livraison...)
+    c/ validation
+3/ TRANSMISSION
+    a/ cliquer étape suivante
+    b/ insérer certificat électronique (clé usb)
+    c/ saisir code pin (signature électronique)
+
+Financement via un autre site web
+Suivi du poste en ligne via encore un nouveau site
+
+
+***** ca -leasing factoring *****
+Transmission de ses factures toutes les semaines (par exemple). Ecriture de "subrogation" sur les factures
+Clause de confidentialité possible
+
+***** e-affacturage *****
+affacturage des balances clients pour PME qui ont trop de factures
+affacturage des achats (mode de financement des achats) (= affacturage inversé ?)
+etc see : https://www.e-affacturage.fr/affacturage/solutions-d-affacturage.html
+
+
+***** interview métier risques spéciaux *****
+https://www.e-affacturage.fr/societe-d-affacturage/bnp-paribas-affacturage.html
+Première visite : étude des besoins & analyse de la situation
+"Les risques spéciaux concernent tous les secteurs d’activité ayant un mode de facturation spécifique nécessitant un contrôle plus rigoureux. Ceci peut concerner notamment l’avancement des prestations, les situations de travaux, les créances fractionnées, etc..."
+Notamment BTP, public ou parapublic.
+Entre 100k€ et 7500k€ annuel
+Problème d'une facture "liquide, certaine et exigible" dans le cas du BTP (vérification des travaux)
+Le client doit être assurable avec un bon système de facturation
+
+"L'affacturage est considérée comme difficile d'accès aux métiers de la sous-traitance, marchés publics, intérim, grande distribution"
+
+
+***** interview Caisse d'épargne --> Natixis Factor *****
+https://www.caisse-epargne.fr/professionnels/financement/optimiser-sa-tresorerie/affacturage-interview-benjamin-habold
+Nouvelle offre depuis 2016 pour financer les situations de travaux dans le BTP
+
+Typologie de client :
+1/ Besoins ponctuels ou réguliers
+2/ Forte croissance d'activité.
+3/ Besoin de financement sans plafond d'encours
+4/ Financement des stocks
+5/ Achat fournisseurs
+
+Niveaux de prix historiquement bas
+1/ taux d'intérêts
+2/ concurrence
+
+
+***** Interview Factofrance *****
+"Financer son cycle d'exploitation"
+1/ Financer poste client --> pas de dette
+2/ Garantie d'impayé
+3/ Recouvrement factures
+
+Au début, pour entreprises en difficulté.
+320mds de marché en 2019
+
+Avantage pour le DAF **** HYPOTHESE *****
+vue identique de tous ses fournisseurs, pilotage assez fin
+
+actif circulant (qui prend de l'argent)
+2/3 poste client
+1/3 stock
+
+Ne marche qu'en BtoB ou BtoA
+Avantage de l'affacturage : extrêmement souple.
+
+2019 :
+Affacturage : 30mds d'encours = découvert (en 2019)
+Encours en france : 700mds
+"amener de l'oxygène en entreprise" quelque soit le cycle de l'entreprise
+
+***** Subrogation Les Echos *****
+https://videos.lesechos.fr/formation/gestion-entreprise/olivier-gary-laffacturage/us38rp
+Evite de signifier au débiteur la cession par voie d'huissier
+La subrogation permet d'éviter le passage par un huissier
+affacturage : substitution à un prêt long terme
+
+
+***** instinct business Laurent playez *****
+https://instinctbusiness.com/paroles-entrepreneurs/financement-poste-client-fournisseur-recherche-bon-equilibre/
+60% des entreprises ont une solution de financement des règlement clients
+15% **************************************************************fournisseurs
+***** HYPOTHESE IV ***** Une solution de financement du poste fournisseur !!!!
+
+
+***** SNCF Agefi *****
+https://www.agefi.fr/financements-marches/actualites/video/20170925/process-profondement-transformes-227704
