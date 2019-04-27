@@ -12,7 +12,7 @@ contract bonDeCommande {
         address id; //primary key
         string nom; //traceability infos
         string localisation;
-        string TVA;
+        string tva;
         uint[] bonsDeCommande; //hold receivables.
         uint[] montant;
         address client; //supply chain
@@ -88,6 +88,7 @@ contract bonDeCommande {
      */
     function activateAccount(bytes32 _secret) public returns (address, address){
         uint by = _activation[_secret];
+        require(by != _indexFournisseur[msg.sender], "Vous ne pouvez pas approver votre propre compte fournisseur");
         require(by >= 1, "Ce code n'existe pas ou a déjà été utilisé");
         fournisseurs[by].id = msg.sender;
         _indexFournisseur[msg.sender] = by;
@@ -96,8 +97,7 @@ contract bonDeCommande {
         return (fournisseurs[by].client, msg.sender);
     }
 
-    
-        /**
+    /**
      * @dev Public function to check whether an order exists.
      * @param _numBon uint ID of the order to be minted
      * @return true or false
@@ -106,7 +106,7 @@ contract bonDeCommande {
         return bons[_indexBon[_numBon]].rang > 0;
     }
     
-        /**
+    /**
      * @dev Public function to check whether a supplier is active or not.
      * @param _fournisseur uint ID of the order to be minted
      * @return true or false
@@ -115,7 +115,7 @@ contract bonDeCommande {
         return fournisseurs[_indexFournisseur[_fournisseur]].id != address(0);
     }
     
-        /**
+    /**
      * @dev Public function to check whether a supplier is the one at the top of the supply chain or not.
      * @param _fournisseur uint ID of the order to be minted
      * @return true or false
@@ -124,7 +124,7 @@ contract bonDeCommande {
         return _indexFournisseur[_fournisseur] == 1;
     }
     
-            /**
+    /**
      * @dev Public function to check whether a supplier is the one at the top of the supply chain or not.
      * @param _tierZero adresse client
      * @param _tierOne adresse fournisseur
@@ -166,7 +166,7 @@ contract bonDeCommande {
         nouvelleCommande(to,_numBon, _montant);
     }
     
-        /**
+    /**
      * @dev Gets the list of suppliers tier-1 for one given supplier.
      * @param _fournisseur addresse
      * @return Fournisseur
@@ -175,7 +175,16 @@ contract bonDeCommande {
         return fournisseurs[_indexFournisseur[_fournisseur]].tierOne;
     }
     
-        /**
+    /**
+     * @dev Gets the list of supplier attributes.
+     * @param _fournisseur addresse
+     * @return Fournisseur
+     */
+    function fournisseursAttributes(address _fournisseur) public view returns (Fournisseur memory){
+        return fournisseurs[_indexFournisseur[_fournisseur]];
+    }
+    
+    /**
      * @dev Gets the list of orders.
      * @return BonDeCommande
      */
@@ -184,6 +193,14 @@ contract bonDeCommande {
     }
     
         /**
+     * @dev Gets the orders attributes.
+     * @return BonDeCommande
+     */
+    function listeBons(uint _numBon) public view returns (BonDeCommande memory){
+        return bons[_numBon];
+    }
+    
+    /**
      * @dev Gets the balance of the specified address.
      * https://ethereum.stackexchange.com/questions/49986/returning-dynamic-array-not-works
      * @return uint representing the amount owned by the passed address
