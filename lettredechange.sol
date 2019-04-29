@@ -13,6 +13,7 @@ contract bonDeCommande {
         string nom; //traceability infos
         string localisation;
         string tva;
+        string mail;
         uint[] bonsDeCommande; //hold receivables.
         uint[] montant;
         address client; //supply chain
@@ -41,20 +42,20 @@ contract bonDeCommande {
     uint b = 0;
     
     
-    constructor (string memory _nom, string memory _localisation, string memory _tva) public {
+    constructor (string memory _nom, string memory _localisation, string memory _tva, string memory _mail) public {
         //initialisations
         BonDeCommande memory genesisBon = BonDeCommande(0, new address[](0), 0, 0, "Genesis", 0, 0);
         bons.push(genesisBon);
         _indexBon[0] = b;
         b++;
         
-        Fournisseur memory genesisFournisseur = Fournisseur(address(0), "Genesis","","", new uint[](0), new uint[](0), address(0), new address[](0) ,0);
+        Fournisseur memory genesisFournisseur = Fournisseur(address(0), "Genesis","","", "", new uint[](0), new uint[](0), address(0), new address[](0) ,0);
         fournisseurs.push(genesisFournisseur);
         fournisseurs[0].tierOne.push(msg.sender);
         _indexFournisseur[address(0)] = f;
         f++;
         
-        Fournisseur memory premierFournisseur = Fournisseur(msg.sender, _nom, _localisation, _tva, new uint[](0), new uint[](0), address(0), new address[](0) ,0);
+        Fournisseur memory premierFournisseur = Fournisseur(msg.sender, _nom, _localisation, _tva, _mail, new uint[](0), new uint[](0), address(0), new address[](0) ,0);
         fournisseurs.push(premierFournisseur);
         _indexFournisseur[msg.sender] = f;
         f++;
@@ -69,11 +70,11 @@ contract bonDeCommande {
      * @param _secret Secret code to be chosen by the client
      * @return secret
      */
-    function creerCompteFournisseur(string memory _nom, string memory _localisation, string memory _tva, string memory _secret) public returns(bytes32) {
+    function creerCompteFournisseur(string memory _nom, string memory _localisation, string memory _tva, string memory _mail, string memory _secret) public returns(bytes32) {
         require(_existsFournisseur(msg.sender),"Vous n'êtes pas enregistré en tant que fournisseur");
         bytes32 secret = keccak256(abi.encodePacked(_secret));
-        
-        Fournisseur memory nouveauFournisseur = Fournisseur(address(0), _nom, _localisation, _tva, new uint[](0), new uint[](0), msg.sender, new address[](0) , secret);
+        require(_activation[secret] == 0, "Secret déjà en cours d'utilisation");
+        Fournisseur memory nouveauFournisseur = Fournisseur(address(0), _nom, _localisation, _tva, _mail, new uint[](0), new uint[](0), msg.sender, new address[](0) , secret);
         fournisseurs.push(nouveauFournisseur);
         _activation[secret] = f;
         f++;
@@ -180,8 +181,18 @@ contract bonDeCommande {
      * @param _fournisseur addresse
      * @return Fournisseur
      */
-    function fournisseursAttributes(address _fournisseur) public view returns (Fournisseur memory){
-        return fournisseurs[_indexFournisseur[_fournisseur]];
+    function fournisseursAttributes(address _fournisseur) public view returns (uint, Fournisseur memory){
+        uint indexF = _indexFournisseur[_fournisseur];
+        return (indexF, fournisseurs[indexF]);
+    }
+    
+     /**
+     * @dev Gets the list of orders attributes.
+     * @param _numBon numbon
+     * @return BonDeCommande
+     */
+    function bonsAttributes(uint _numBon) public view returns (BonDeCommande memory){
+        return bons[_indexBon[_numBon]];
     }
     
     /**
@@ -197,7 +208,7 @@ contract bonDeCommande {
      * @return BonDeCommande
      */
     function listeBons(uint _numBon) public view returns (BonDeCommande memory){
-        return bons[_numBon];
+        return bons[_indexBon[_numBon]];
     }
     
     /**
