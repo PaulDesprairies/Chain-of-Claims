@@ -1,6 +1,6 @@
 var dapp;
 var user;
-
+var quali 
 
 async function goToOperations(){
   await window.location.assign('operations.html');
@@ -34,18 +34,23 @@ async function redirection(){
 
     dapp = await load();
     user = await dapp.user;
-    var quali = await qualification();
+    let supplier;
+    let index;
+    [index,supplier] = await dapp.coc.fournisseursAttributes(user); 
+    console.log(index);
+    console.log(supplier);
+    quali = await qualification();
 
     if (quali == 0){
         document.getElementById("bienvenue").innerHTML = "bienvenue admin";
-        afficherFournisseurs();
+        afficherFournisseurs(index);
         //proposer une nouvelle commande
     }
     else if (quali == 1){
       document.getElementById("bienvenue").innerHTML = "Vous n'avez pas de droit d'accès à cette page.";
     }else if (quali == 2){
       document.getElementById("bienvenue").innerHTML = "bienvenue fournisseur";
-      afficherFournisseurs();
+      afficherFournisseurs(index);
       //affichage de bons
       //propose un forward
 
@@ -53,20 +58,26 @@ async function redirection(){
 }
 
 async function nouveauFournisseur(){
+    // let supplier;
+    // let index;
+    // [index,supplier] = await dapp.coc.fournisseursAttributes(user); 
     let _nom = document.getElementById("nom").value ;
     let _location = document.getElementById("location").value;
     let _tva = document.getElementById("tva").value;
-    if (_nom == null || _location == null || _tva == null || _nom == "" || _location == "" || _tva == ""){
+    let _mail = document.getElementById("mail").value;
+    if (_nom == null || _location == null || _tva == null || _mail == null || _nom == "" || _location == "" || _tva == "" || _mail == ""){
       alert("Merci de renseigner une valeur pour le nom, le lieu et la TVA");
       return;
     }
     let _secret;
     _secret = secret();
-    alert("test");
-    let nouveauFournisseur = await dapp.coc.creerCompteFournisseur(_nom, _location, _tva, _secret);
-    console.log(nouveauFournisseur)
-    alert("Nouveau compte en attente de validation.");
-    return nouveauFournisseur;
+
+    dapp.coc.creerCompteFournisseur(_nom, _location, _tva, _mail, _secret)
+        .then((secret)=>{
+            console.log(secret);
+            alert("Nouveau compte en attente de validation.");
+        });
+
 }
 
 function secret() {
@@ -89,11 +100,13 @@ async function activateAccount(){
     goToOperations();
 }
 
-async function afficherFournisseurs(){
+async function afficherFournisseurs(index){
     document.getElementById("tableauDesFournisseurs").innerHTML = "Veuillez patienter...";
     const f = document.createDocumentFragment();
     let tierOne;
-    tierOne = await dapp.coc.listeTierOne(user);
+    let userAddress = await dapp.coc.fournisseurs(index);
+    tierOne = await dapp.coc.listeTierOne(userAddress.id);
+
     console.log(tierOne);
     let tableau = `
     <table>
@@ -109,28 +122,27 @@ async function afficherFournisseurs(){
       </tr>
     </thead>`
     for (x of tierOne){
-      let f ;
-        f = await dapp.coc.fournisseursAttributes(x);
+      let supplier;
+      let index;
+      [index,supplier] = await dapp.coc.fournisseursAttributes(x);
         tableau +=
           `<tbody class="thead-light">
             <tr>
               <th scope="row">${tierOne.indexOf(x) + 1}</th>
-              <td>${f.nom}</td>
-              <td>${f.localisation}</td>
-              <td>${f.TVA}</td>
+              <td>${supplier.nom}</td>
+              <td>${supplier.localisation}</td>
+              <td>${supplier.tva}</td>
               <td>
-                <span><button onclick="contacter()">Contacter</span>
+                <span><button onclick="contacter(${supplier.mail})">Contacter</span>
               </td>
               <td>
-                <span><button onclick="consulterTierOne()">Consulter</span>
+                <span><button onclick="afficherBons(${index})">Consulter</span>
               </td>
               <td>
-                <span><button onclick="consulterBons()">Consulter</span>
-              </td>
-
-
-              `
+                <span><button onclick="afficherFournisseurs(${index})">Consulter</span>
+              </td>`
     }
+
     tableau += `<tbody>
     <tr>
       <td><span><button onclick="nouveauFournisseur()">Ajouter un nouveau fournisseur</span></td>
@@ -150,6 +162,88 @@ async function afficherFournisseurs(){
             document.getElementById("tableauDesFournisseurs").innerHTML = "";
             document.getElementById("tableauDesFournisseurs").appendChild(f);
 }
+
+
+async function afficherBons(index){
+  document.getElementById("tableauDesFournisseurs").innerHTML = "Veuillez patienter...";
+  const f = document.createDocumentFragment();
+  
+  let userAddress = await dapp.coc.fournisseurs(index);
+  [numBons, montant] = await dapp.coc.listeDeCommandes(userAddress.id);
+
+  let tableau = `
+  <table>
+  <thead>
+    <tr>
+      <th>Index</th>
+      <th>Numéro de bon</th>
+      <th>Montant</th>
+      <th>Description</th>
+      <th>Date d'échéance</th>
+      <th>Date d'émission</th>
+      <th>Rang</th>
+    </tr>
+  </thead>`
+  for (x of numBons){
+      let bon = await dapp.coc.bonsAttributes(x);
+      tableau +=
+        `<tbody class="thead-light">
+          <tr>
+            <th scope="row">${numBons.indexOf(x) + 1}</th>
+            <td>${x}</td>
+            <td>${montant[numBons.indexOf(x)]}</td>
+            <td>${bon.description}</td>
+            <td>${bon.echeance}</td>
+            <td>${bon.dateEmission}</td>
+            <td>${bon.rang}</td>
+            <td>
+              <span><button onclick="afficherFournisseurs(${index})">Consulter</span>
+            </td>`
+  }
+
+  if (quali == 0){
+    console.log(quali);
+  tableau += `<tbody>
+  <tr>
+    <td><span><button onclick="nouveauBon(${index})">Emettre un nouveau bon</span></td>
+    <td><input type ="text" id ="numbon" placeholder="Numéro de bon"></input></td>
+    <td><input type ="text" id ="montant" placeholder="Montant"></input></td>
+    <td><input type ="text" id ="description" placeholder="Descriptions"></input></td>
+    <td><input type ="text" id ="echeance" placeholder="Date d'échéance"></input></td>
+    <td></td>
+    <td></td>
+    </tr>
+  </tbody>
+  </table>`
+}
+  doc = document.createElement("div");
+          doc.innerHTML = tableau;
+          f.appendChild(doc);
+          document.getElementById("tableauDesFournisseurs").innerHTML = "";
+          document.getElementById("tableauDesFournisseurs").appendChild(f);
+  
+}
+
+
+async function nouveauBon(index){
+  console.log(index);
+  let _to = await dapp.coc.fournisseurs(index); 
+  console.log(_to);
+  let _numbon = document.getElementById("numbon").value ;
+  let _montant = document.getElementById("montant").value;
+  let _description = document.getElementById("description").value;
+  let _echeance = document.getElementById("echeance").value;
+  if (_numbon == null || _montant == null || _description == null || _echeance == null || _numbon == "" || _montant == "" || _description == "" || _echeance == ""){
+    alert("Merci de renseigner une valeur pour le numéro de bon, son montant, une description et son échéance");
+    return;
+  }
+
+  let nouveauBonEmis = await dapp.coc._mint(_to.id, _numbon, _montant, _description, _echeance);
+      alert("Nouveau bon émis.");
+
+
+}
+
 
 async function operations(){
     try{
