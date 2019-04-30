@@ -33,8 +33,8 @@ contract bonDeCommande {
         uint8 rang;
         uint montant; // Receivable description
         string description;
-        uint echeance;
         uint dateEmission;
+        uint echeance;
     }
 
     BonDeCommande[] public bons;
@@ -44,7 +44,7 @@ contract bonDeCommande {
     
     constructor (string memory _nom, string memory _localisation, string memory _tva, string memory _mail) public {
         //initialisations
-        BonDeCommande memory genesisBon = BonDeCommande(0, new address[](0), 0, 0, "Genesis", 0, 0);
+        BonDeCommande memory genesisBon = BonDeCommande(0, new address[](0), 0, 0, "Genesis", block.timestamp, 0);
         bons.push(genesisBon);
         _indexBon[0] = b;
         b++;
@@ -78,8 +78,14 @@ contract bonDeCommande {
         fournisseurs.push(nouveauFournisseur);
         _activation[secret] = f;
         f++;
-        return secret;
+        emit Secret(secret);
     }
+    
+        event Secret(
+            bytes32 indexed secret
+            );
+        
+
 
     /**
      * @dev Public function to activate the supplier account.
@@ -95,8 +101,13 @@ contract bonDeCommande {
         _indexFournisseur[msg.sender] = by;
         ajouterTierOne(fournisseurs[_indexFournisseur[msg.sender]].client,msg.sender);
         _activation[_secret] = 0;
+        emit Activate(_secret);
         return (fournisseurs[by].client, msg.sender);
     }
+
+        event Activate(
+            bytes32 indexed secret
+            );
 
     /**
      * @dev Public function to check whether an order exists.
@@ -141,22 +152,20 @@ contract bonDeCommande {
      * @param _numBon uint ID of the order to be minted
      * @param _montant valeur du bon
      * @param _description description du bon
-     * @param _echeance_jours echeance du remboursement de la créance comptablement généré par le bon de commande
+     * @param _emission date d'émission de la créance comptablement généré par le bon de commande
+     * @param _echeance echeance du remboursement de la créance comptablement généré par le bon de commande
      */
      
-    function _mint(address to, uint _numBon, uint _montant, string memory _description, uint _echeance_jours) public {
+    function _mint(address to, uint _numBon, uint _montant, string memory _description, uint _emission, uint _echeance) public {
         require(_isHigherSupplier(msg.sender),"Vous devez être le fournisseur en haut de chaîne");
         require(_existsFournisseur(to),"Veuillez enregistrer votre fournisseur d'abord ou lui laisser le temps de s'inscrire");
         require(to != msg.sender, "Vous ne pouvez pas vous auto-attribuer un bon");
         require(!_existsBon(_numBon),"Ce numéro de bon existe déjà");
-        
-        //conversion de l'échéance en donnée comparable à block.timestamp
-        _echeance_jours = _echeance_jours * 24 * 60 * 60;
-        _echeance_jours += block.timestamp;
+
 
         //Création du bon de commande
         BonDeCommande memory nouveauBon;
-        nouveauBon = BonDeCommande(_numBon, new address[](0), 1, _montant, _description, _echeance_jours, block.timestamp);
+        nouveauBon = BonDeCommande(_numBon, new address[](0), 1, _montant, _description, _emission, _echeance);
         bons.push(nouveauBon);
         _indexBon[_numBon] = b;
         bons[_indexBon[_numBon]].proprietaires.push(to);
@@ -165,7 +174,13 @@ contract bonDeCommande {
         
         //Maj des infos fournisseur
         nouvelleCommande(to,_numBon, _montant);
+        
+        emit NouveauBon(_numBon);
     }
+    
+     event NouveauBon(
+            uint indexed _numBon
+            );
     
     /**
      * @dev Gets the list of suppliers tier-1 for one given supplier.
