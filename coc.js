@@ -58,9 +58,11 @@ async function redirection(){
 }
 
 async function nouveauFournisseur(){
-    // let supplier;
-    // let index;
-    // [index,supplier] = await dapp.coc.fournisseursAttributes(user); 
+
+    dapp.coc.on("Secret", (secret) => {
+      alert("Nouveau compte en attente de validation. Code à transmettre à votre fournisseur :" + secret);
+    });
+
     let _nom = document.getElementById("nom").value ;
     let _location = document.getElementById("location").value;
     let _tva = document.getElementById("tva").value;
@@ -75,8 +77,9 @@ async function nouveauFournisseur(){
     dapp.coc.creerCompteFournisseur(_nom, _location, _tva, _mail, _secret)
         .then((secret)=>{
             console.log(secret);
-            alert("Nouveau compte en attente de validation.");
         });
+  
+    
 
 }
 
@@ -94,10 +97,12 @@ function secret() {
 
 async function activateAccount(){
     let dapp = await load();    
+    dapp.coc.on("Activate", (secret) => {
+      goToOperations();
+    });
     let _secretHash = document.getElementById("secretHash").value;
     let secretHash = await dapp.coc.activateAccount(_secretHash);
     console.log(secretHash);
-    goToOperations();
 }
 
 async function afficherFournisseurs(index){
@@ -106,9 +111,12 @@ async function afficherFournisseurs(index){
     let tierOne;
     let userAddress = await dapp.coc.fournisseurs(index);
     tierOne = await dapp.coc.listeTierOne(userAddress.id);
-
-    console.log(tierOne);
-    let tableau = `**** Tableau des fournisseurs ****
+    if (tierOne.length == 0){
+    var tableauFournisseur = `Enregistrez votre premier fournisseur.`
+    }else{
+    var tableauFournisseur = `**** Tableau des fournisseurs ****`
+    }
+    tableauFournisseur += `
     <table>
     <thead>
       <tr>
@@ -126,7 +134,7 @@ async function afficherFournisseurs(index){
       let index;
       [index,supplier] = await dapp.coc.fournisseursAttributes(x);
       let numero = tierOne.indexOf(x) + 1;
-        tableau +=
+      tableauFournisseur +=
           `<tbody class="thead-light">
             <tr>
               <th scope="row">${numero}</th>
@@ -144,7 +152,7 @@ async function afficherFournisseurs(index){
               </td>`
     }
 
-    tableau += `<tbody>
+    tableauFournisseur += `<tbody>
     <tr>
       <td><span><button onclick="nouveauFournisseur()">Ajouter un nouveau fournisseur</span></td>
       <td><input type ="text" id ="nom" placeholder="Nom"></input></td>
@@ -156,9 +164,10 @@ async function afficherFournisseurs(index){
       </tr>
     </tbody>
     </table>`
+    
 
     doc = document.createElement("div");
-            doc.innerHTML = tableau;
+            doc.innerHTML = tableauFournisseur;
             f.appendChild(doc);
             document.getElementById("tableauDesFournisseurs").innerHTML = "";
             document.getElementById("tableauDesFournisseurs").appendChild(f);
@@ -171,9 +180,10 @@ async function afficherBons(index){
   
   let userAddress = await dapp.coc.fournisseurs(index);
   [numBons, montant] = await dapp.coc.listeDeCommandes(userAddress.id);
-  console.log(numBons);
-  console.log(montant);
-  let tableau = ` ****Tableau des bons****
+    if (numBons.length == 0 && quali !=0){
+    var tableauBon = `Aucun bon référencé pour le moment.`
+    } else {
+    var tableauBon = ` ****Tableau des bons****
   <table>
   <thead>
     <tr>
@@ -181,8 +191,8 @@ async function afficherBons(index){
       <th>Numéro de bon</th>
       <th>Montant</th>
       <th>Description</th>
-      <th>Date d'échéance</th>
       <th>Date d'émission</th>
+      <th>Date d'échéance</th>
       <th>Rang</th>
       <th>Opérations</th>
     </tr>
@@ -190,71 +200,99 @@ async function afficherBons(index){
   for (x of numBons){
       let bon = await dapp.coc.bonsAttributes(x);
       let montantTemp = montant.indexOf(x) + 1; //erreur
-      console.log(montantTemp);
-      let emission = new Date(bon.dateEmission / 1000);
-      let echeance = new Date(bon.echeance / 1000);
-      emission = emission.toUTCString();
-      echeance = echeance.toUTCString();
-      tableau +=
+
+
+      // var time = new Date().getTime();
+      // var date = new Date(time);
+      // alert(date.toString());
+
+      let em = convertTime(bon.dateEmission)
+      em = em.toLocaleDateString()
+
+      let ec = convertTime(bon.echeance)
+      ec = ec.toLocaleDateString()
+
+      tableauBon +=
         `<tbody class="thead-light">
           <tr>
             <th scope="row">${montantTemp +1}</th>
             <td>${bon.numBon}</td>
             <td>${montant[montantTemp]}</td>
             <td>${bon.description}</td>
-            <td>${echeance}</td>
-            <td>${emission}</td>
+            <td>${em}</td>
+            <td>${ec}</td>
             <td>${bon.rang}</td>
             <td>
-              <div><button onclick="tableauDesBons(${index})">Consulter le Bon</div>
-              <div><button onclick="tableauDesBons(${index})">Utiliser ce bon pour paiement</div>
-            </td>`
+              <div><button onclick="tableauDesBons(${index})">Consulter le Bon</div>`
+              
+              if (quali == 2){
+                tableauBon +=
+              `
+              <div><button onclick="tableauDesBons(${index})">Utiliser ce bon pour paiement</div>`
+              }
+              tableauBon +=
+              `</td>`
   }
 
   if (quali == 0){
-    console.log(quali);
-  tableau += `<tbody>
+    let d = new Date();
+    let now = d.toLocaleDateString();
+    tableauBon += `<tbody>
   <tr>
     <td><span><button onclick="nouveauBon(${index})">Emettre un nouveau bon</span></td>
     <td><input type ="text" id ="numbon" placeholder="Numéro de bon"></input></td>
     <td><input type ="text" id ="montant" placeholder="Montant"></input></td>
     <td><input type ="text" id ="description" placeholder="Descriptions"></input></td>
+    <td>${now}</td>
     <td><input type ="date" id ="echeance" placeholder="Date d'échéance"></input></td>
-    <td></td>
-    <td></td>
+    <td>1</td>
     </tr>
   </tbody>
   </table>`
-}
+    }
+  }
   doc = document.createElement("div");
-          doc.innerHTML = tableau;
+          doc.innerHTML = tableauBon;
           f.appendChild(doc);
           document.getElementById("tableauDesBons").innerHTML = "";
           document.getElementById("tableauDesBons").appendChild(f);
   
 }
 
+function convertTime(_time){
+  let time;
+  time = _time;
+  time = time / 1;
+  var dateTime = new Date(time);
+  return dateTime
+}
 
 async function nouveauBon(index){
-  console.log(index);
+  dapp.coc.on("NouveauBon", (_numbon) => {
+    alert("Nouveau bon émis.");
+    afficherBons(index);
+  });
+  let now = new Date();
   let _to = await dapp.coc.fournisseurs(index); 
-  console.log(_to);
   let _numbon = document.getElementById("numbon").value ;
   let _montant = document.getElementById("montant").value;
   let _description = document.getElementById("description").value;
   let _echeance = document.getElementById("echeance").value;
-  _echeance = Date.parse(_echeance) * 1000;
+  _echeance = Date.parse(_echeance);
   if (_numbon == null || _montant == null || _description == null || _echeance == null || _numbon == "" || _montant == "" || _description == "" || _echeance == ""){
     alert("Merci de renseigner une valeur pour le numéro de bon, son montant, une description et son échéance");
     return;
   }
-  if (_echeance <= Date.now()){
-    alert("Merci de renseigner une date d'échéance future");
+  if (isNaN(_numbon)||isNaN(_montant)){
+    alert("Merci de renseigner des valeurs numériques pour le numéro de bon et le montant.");
     return;
   }
+  if (_echeance <= now){
+    alert("Merci de renseigner une date d'échéance future");
+    return;
 
-  let nouveauBonEmis = await dapp.coc._mint(_to.id, _numbon, _montant, _description, _echeance);
-      alert("Nouveau bon émis.");
+  }
+  let nouveauBonEmis = await dapp.coc._mint(_to.id, _numbon, _montant, _description, now.getTime(), _echeance);
 
-
+  
 }
