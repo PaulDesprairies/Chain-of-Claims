@@ -18,7 +18,9 @@ contract bonDeCommande {
         uint[] montant;
         address client; //supply chain
         address[] tierOne;
+        uint8 rang;
         bytes32 secret; //activation code
+
     }
 
     Fournisseur[] public fournisseurs;
@@ -30,7 +32,6 @@ contract bonDeCommande {
     struct BonDeCommande {
         uint numBon; // Primary key
         address[] proprietaires; // Supply chain members tier
-        uint8 rang;
         uint montant; // Receivable description
         string description;
         uint dateEmission;
@@ -44,18 +45,18 @@ contract bonDeCommande {
     
     constructor (string memory _nom, string memory _localisation, string memory _tva, string memory _mail) public {
         //initialisations
-        BonDeCommande memory genesisBon = BonDeCommande(0, new address[](0), 0, 0, "Genesis", block.timestamp, 0);
+        BonDeCommande memory genesisBon = BonDeCommande(0, new address[](0), 0, "Genesis", block.timestamp, 0);
         bons.push(genesisBon);
         _indexBon[0] = b;
         b++;
         
-        Fournisseur memory genesisFournisseur = Fournisseur(address(0), "Genesis","","", "", new uint[](0), new uint[](0), address(0), new address[](0) ,0);
+        Fournisseur memory genesisFournisseur = Fournisseur(address(0), "Genesis","","", "", new uint[](0), new uint[](0), address(0), new address[](0), 0, 0);
         fournisseurs.push(genesisFournisseur);
         fournisseurs[0].tierOne.push(msg.sender);
         _indexFournisseur[address(0)] = f;
         f++;
         
-        Fournisseur memory premierFournisseur = Fournisseur(msg.sender, _nom, _localisation, _tva, _mail, new uint[](0), new uint[](0), address(0), new address[](0) ,0);
+        Fournisseur memory premierFournisseur = Fournisseur(msg.sender, _nom, _localisation, _tva, _mail, new uint[](0), new uint[](0), address(0), new address[](0) , 0, 0);
         fournisseurs.push(premierFournisseur);
         _indexFournisseur[msg.sender] = f;
         f++;
@@ -74,7 +75,8 @@ contract bonDeCommande {
         require(_existsFournisseur(msg.sender),"Vous n'êtes pas enregistré en tant que fournisseur");
         bytes32 secret = keccak256(abi.encodePacked(_secret));
         require(_activation[secret] == 0, "Secret déjà en cours d'utilisation");
-        Fournisseur memory nouveauFournisseur = Fournisseur(address(0), _nom, _localisation, _tva, _mail, new uint[](0), new uint[](0), msg.sender, new address[](0) , secret);
+        uint8 rank = fournisseurs[_indexFournisseur[msg.sender]].rang + 1;
+        Fournisseur memory nouveauFournisseur = Fournisseur(address(0), _nom, _localisation, _tva, _mail, new uint[](0), new uint[](0), msg.sender, new address[](0), rank, secret);
         fournisseurs.push(nouveauFournisseur);
         _activation[secret] = f;
         f++;
@@ -115,7 +117,7 @@ contract bonDeCommande {
      * @return true or false
      */
     function _existsBon(uint _numBon) public view returns (bool) { //internal
-        return bons[_indexBon[_numBon]].rang > 0;
+        return bons[_indexBon[_numBon]].montant > 0;
     }
     
     /**
@@ -165,10 +167,10 @@ contract bonDeCommande {
 
         //Création du bon de commande
         BonDeCommande memory nouveauBon;
-        nouveauBon = BonDeCommande(_numBon, new address[](0), 1, _montant, _description, _emission, _echeance);
+        nouveauBon = BonDeCommande(_numBon, new address[](0), _montant, _description, _emission, _echeance);
         bons.push(nouveauBon);
         _indexBon[_numBon] = b;
-        bons[_indexBon[_numBon]].proprietaires.push(to);
+        //bons[_indexBon[_numBon]].proprietaires.push(to); doublon
         b++;
         
         
@@ -322,18 +324,17 @@ contract bonDeCommande {
      * @param _indexB order index
      * @param from address sending
      */
-    function supprimerCommandeBon(address from, uint _indexB) public view{ //internal
-        uint[] memory num;
-        uint[] memory montant;
-        (num, montant) = listeDeCommandes(from);
+    function supprimerCommandeBon(address from, uint _indexB) public{ //internal
+
         uint nbBons = _longueurCarnetDeCommande(from);
         
         if (nbBons - 1 != _indexB){
-            num[_indexB] = num[nbBons-1];
-            montant[_indexB] = montant[nbBons-1];
+            fournisseurs[_indexFournisseur[from]].bonsDeCommande[_indexB] = fournisseurs[_indexFournisseur[from]].bonsDeCommande[nbBons - 1];
+            fournisseurs[_indexFournisseur[from]].montant[_indexB] = fournisseurs[_indexFournisseur[from]].montant[nbBons - 1];
         }
-            delete num[nbBons - 1];
-            delete montant[nbBons - 1];
+        delete fournisseurs[_indexFournisseur[from]].bonsDeCommande[nbBons - 1];
+        delete fournisseurs[_indexFournisseur[from]].montant[nbBons - 1];
+
     }
     
        /**
@@ -341,7 +342,7 @@ contract bonDeCommande {
      * @param from address sending
      * @param _numBon order id
      */
-    function supprimerCommandeFournisseur(address from, uint _numBon) public view{ //internal
+    function supprimerCommandeFournisseur(address from, uint _numBon) public{ //internal
         address[] memory detenteurs = listeDeDetenteurs(_numBon);
         uint nbDetenteurs = detenteurs.length;
         uint _indexF;
@@ -353,10 +354,10 @@ contract bonDeCommande {
             }
             
             if(nbDetenteurs - 1 != _indexF){
-                detenteurs[_indexF] = detenteurs[nbDetenteurs-1];
+                bons[_indexBon[_numBon]].proprietaires[_indexF] = bons[_indexBon[_numBon]].proprietaires[nbDetenteurs-1];
             }
             
-            delete detenteurs[nbDetenteurs-1];
+            delete bons[_indexBon[_numBon]].proprietaires[nbDetenteurs-1];
         }
         
        /**
@@ -364,7 +365,7 @@ contract bonDeCommande {
      * @param from address sending
      * @param _numBon order id
      */
-        function supprimerCommande(address from, uint _indexB, uint _numBon) public view{ //internal
+        function supprimerCommande(address from, uint _indexB, uint _numBon) public{ //internal
             supprimerCommandeBon(from, _indexB);
             supprimerCommandeFournisseur(from, _numBon);
         }
@@ -393,18 +394,12 @@ contract bonDeCommande {
      * @param _montant order value
      * @param from address sending
      */
-    function transferSoustraction(address from, uint _numBon, uint _indexMontantFrom, uint _montant) public view{ //internal
-        uint[] memory num;
-        uint[] memory montant;
-        (num, montant) = listeDeCommandes(from);
-        
-        if(montant[_indexMontantFrom] == _montant){                 //transfert de 100% du bon
+    function transferSoustraction(address from, uint _numBon, uint _indexMontantFrom, uint _montant) public { //internal
+
+        if(fournisseurs[_indexFournisseur[from]].montant[_indexMontantFrom] == _montant){                 //transfert de 100% du bon
             supprimerCommande(from, _indexMontantFrom, _numBon);
-        }else{                                          //transfert d'une partie du bon
-            uint index_debite;
-            Fournisseur memory fournisseur_debite;
-            (index_debite,fournisseur_debite) = fournisseursAttributes(from);
-            fournisseur_debite.montant[_indexMontantFrom] -= _montant;
+        }else{                                                      //transfert d'une partie du bon
+            fournisseurs[_indexFournisseur[from]].montant[_indexMontantFrom] -= _montant;
         }
     }
 
@@ -436,7 +431,14 @@ contract bonDeCommande {
         (check, indexMontantFrom) = checkIfHeldBonEtMontant(msg.sender, _numBon, _montant);
         require(check, "Vous ne possédez pas de ce bon en quantité suffisant (ou alors ne possédez pas ce bon du tout"); 
         transfer(to, msg.sender, indexMontantFrom, _numBon, _montant);
+        
+       emit PushBon(_numBon);
     }
+    
+     event PushBon(
+            uint indexed _montant
+            );
+    
 
      /**
      * @dev Classic factoring.
@@ -455,12 +457,36 @@ contract bonDeCommande {
     }
 
         /**
-     * @dev Pay the receivable back.
+     * @dev Check the order expiration.
      * @param _numBon order id
      */
-    
-    
-    function burn(uint _numBon) public{
+    function expiration(uint _numBon) public view returns(bool){
+        uint _echeance = bons[_indexBon[_numBon]].echeance;
+        return _echeance < block.timestamp;
+     }
+     
+        /**
+     * @dev Burn the token.
+     * @param _numBon order id
+     * @param from token holder
+     * @param _indexB token position
+     */
+     function burn(address from, uint _indexB, uint _numBon) public{
+         if(expiration(_numBon)){
+             supprimerCommande(from, _indexB, _numBon);
+             // payement de carrfour en ether
+         }
+     }
+     
+     
+        /**
+     * @dev Trigger payback.
+     * @param _montant payable amount
+     * @param to account to be paid
+     */
+     function payback(address payable to, uint _montant) public payable{
+         //payable function
+         //emit
      }
     
 }
