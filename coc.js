@@ -1,6 +1,81 @@
 var dapp;
 var user;
-var quali 
+var quali;
+
+async function transferWindow(indexF, numBon){
+  let userAddress = await dapp.coc.fournisseurs(indexF);
+  let tierOne = await dapp.coc.listeTierOne(userAddress.id);
+  if (tierOne.length == 0){
+      alert("Vous devez avoir enregistré au moins un fournisseur")
+  }else{
+  localStorage.setItem("indexF", indexF);
+
+  let bon = await dapp.coc.bonsAttributes(numBon);
+  let montant = bon.montant;
+  localStorage.setItem("montant", montant);
+  localStorage.setItem("numBon" , numBon)
+  await window.open("transferBon.html","mywindow","menubar=1,resizable=1,width=350,height=250");
+  }
+}
+
+async function transferBon(){
+  dapp = await load();
+
+  let numBon = localStorage.getItem("numBon");
+  let titreTransfert = "Transfert du bon n° " + numBon;
+  document.getElementById("titreTransfert").innerHTML = titreTransfert;
+
+  var indexF = localStorage.getItem("indexF");
+  var user = await dapp.coc.fournisseurs(indexF);
+  var liste = await dapp.coc.listeTierOne(user.id);
+  var select_fournisseur = document.getElementById('fournisseur');
+  for (x of liste){
+    let supplier;
+    [,supplier] = await dapp.coc.fournisseursAttributes(x);
+    var opt = document.createElement('option');
+    opt.value = supplier.id;
+    opt.innerHTML = supplier.nom;
+    select_fournisseur.appendChild(opt)
+  }
+
+  var montant = localStorage.getItem("montant");
+  select_fournisseur = document.getElementById("montant");
+  let placeholder_montant = "Montant max :" + montant;
+  select_fournisseur.placeholder = placeholder_montant;
+
+}
+
+
+async function validateTransfer(){
+  var montantMax = localStorage.getItem("montant");
+  montantMax = parseInt(montantMax);
+  var montant = document.getElementById("montant").value ;
+  montant = parseInt(montant);
+  var fournisseur = document.getElementById("fournisseur").value ;
+  var numBon = localStorage.getItem("numBon");
+
+
+  if (isNaN(montant)){
+    alert("Merci de renseigner des valeurs numériques pour le montant à transférer.");
+    return;
+  }
+  if (montant > montantMax){
+      alert("Vous ne pouvez renseigner une valeur supérieure à " + montantMax);
+    return;
+  }
+  if (montant <= 0){
+    alert("Merci de renseigner une valeur positive non nulle");
+  }
+
+  let push = await dapp.coc.pushBon(numBon, montant, fournisseur);
+  let indexF = localStorage.getItem("indexF");
+  console.log(push);
+  afficherBons(indexF);
+  alert("Virement effectué.");
+  localStorage.clear();
+  self.close();
+}
+
 
 async function goToOperations(){
   await window.location.assign('operations.html');
@@ -37,19 +112,18 @@ async function redirection(){
     let supplier;
     let index;
     [index,supplier] = await dapp.coc.fournisseursAttributes(user); 
-    console.log(index);
-    console.log(supplier);
+    var nomFournisseur = supplier.nom 
     quali = await qualification();
 
     if (quali == 0){
-        document.getElementById("bienvenue").innerHTML = "bienvenue admin";
+        document.getElementById("bienvenue").innerHTML = "bienvenue admin " + nomFournisseur;
         afficherFournisseurs(index);
 
     }
     else if (quali == 1){
       document.getElementById("bienvenue").innerHTML = "Vous n'avez pas de droit d'accès à cette page.";
     }else if (quali == 2){
-      document.getElementById("bienvenue").innerHTML = "bienvenue fournisseur";
+      document.getElementById("bienvenue").innerHTML = "bienvenue fournisseur " + nomFournisseur;
       afficherFournisseurs(index);
       afficherBons(index);
       //propose un forward
@@ -58,8 +132,8 @@ async function redirection(){
 }
 
 async function nouveauFournisseur(){
-
     dapp.coc.on("Secret", (secret) => {
+      iframe.style.display = "none";
       alert("Nouveau compte en attente de validation. Code à transmettre à votre fournisseur :" + secret);
     });
 
@@ -73,14 +147,25 @@ async function nouveauFournisseur(){
     }
     let _secret;
     _secret = secret();
-
+    document.getElementById("nom").value = "";
+    document.getElementById("location").value ="";
+    document.getElementById("tva").value = "";
+    document.getElementById("mail").value = "";
+    document.getElementById("nom").placeholder = _nom;
+    document.getElementById("location").placeholder = _location;
+    document.getElementById("tva").placeholder = _tva;
+    document.getElementById("mail").placeholder = _mail;
     dapp.coc.creerCompteFournisseur(_nom, _location, _tva, _mail, _secret)
         .then((secret)=>{
             console.log(secret);
         });
-  
-    
-
+    var iframe = document.createElement('iframe');
+        iframe.src="https://giphy.com/gifs/iLuuWPPytEZqM/html5"
+        iframe.width="480"
+        iframe.height="414"
+        iframe.frameBorder="0"
+        iframe.class="giphy-embed"
+        document.body.appendChild(iframe);
 }
 
 function secret() {
@@ -98,11 +183,21 @@ function secret() {
 async function activateAccount(){
     let dapp = await load();    
     dapp.coc.on("Activate", (secret) => {
+      iframe.style.display = "none";
       goToOperations();
     });
     let _secretHash = document.getElementById("secretHash").value;
+    document.getElementById("secretHash").value = "";
+    document.getElementById("secretHash").placeholder = _secretHash;
     let secretHash = await dapp.coc.activateAccount(_secretHash);
     console.log(secretHash);
+    var iframe = document.createElement('iframe');
+    iframe.src="https://giphy.com/gifs/iLuuWPPytEZqM/html5"
+    iframe.width="480"
+    iframe.height="414"
+    iframe.frameBorder="0"
+    iframe.class="giphy-embed"
+    document.body.appendChild(iframe);
 }
 
 async function afficherFournisseurs(index){
@@ -114,7 +209,7 @@ async function afficherFournisseurs(index){
     if (tierOne.length == 0){
     var tableauFournisseur = `Enregistrez votre premier fournisseur.`
     }else{
-    var tableauFournisseur = `**** Tableau des fournisseurs ****`
+    var tableauFournisseur = `**** Tableau des fournisseurs de ${userAddress.nom} ****`
     }
     tableauFournisseur += `
     <table>
@@ -129,20 +224,22 @@ async function afficherFournisseurs(index){
         <th>Tier One</th>
       </tr>
     </thead>`
+    let i;
+    i = 0;
     for (x of tierOne){
       let supplier;
       let index;
       [index,supplier] = await dapp.coc.fournisseursAttributes(x);
-      let numero = tierOne.indexOf(x) + 1;
+      i++
       tableauFournisseur +=
           `<tbody class="thead-light">
             <tr>
-              <th scope="row">${numero}</th>
+              <th scope="row">${i}</th>
               <td>${supplier.nom}</td>
               <td>${supplier.localisation}</td>
               <td>${supplier.tva}</td>
               <td>
-                <span><button onclick="contacter(${supplier.mail})">Contacter</span>
+                <span><button onclick="javascript: window.location.href='${supplier.mail}';">Contacter</span>
               </td>
               <td>
                 <span><button onclick="afficherBons(${index})">Consulter</span>
@@ -174,6 +271,8 @@ async function afficherFournisseurs(index){
 }
 
 
+
+
 async function afficherBons(index){
   document.getElementById("tableauDesBons").innerHTML = "Veuillez patienter...";
   const f = document.createDocumentFragment();
@@ -183,7 +282,7 @@ async function afficherBons(index){
     if (numBons.length == 0 && quali !=0){
     var tableauBon = `Aucun bon référencé pour le moment.`
     } else {
-    var tableauBon = ` ****Tableau des bons****
+    var tableauBon = ` ****Tableau des bons de ${userAddress.nom}****
   <table>
   <thead>
     <tr>
@@ -197,41 +296,33 @@ async function afficherBons(index){
       <th>Opérations</th>
     </tr>
   </thead>`
+  let i;
+  i = 0;
   for (x of numBons){
       let bon = await dapp.coc.bonsAttributes(x);
-      let montantTemp = montant.indexOf(x) + 1; //erreur
-
-
-      // var time = new Date().getTime();
-      // var date = new Date(time);
-      // alert(date.toString());
-
       let em = convertTime(bon.dateEmission)
       em = em.toLocaleDateString()
 
       let ec = convertTime(bon.echeance)
       ec = ec.toLocaleDateString()
-
       tableauBon +=
         `<tbody class="thead-light">
           <tr>
-            <th scope="row">${montantTemp +1}</th>
-            <td>${bon.numBon}</td>
-            <td>${montant[montantTemp]}</td>
+            <th scope="row">${i + 1}</th>
+            <td><button onclick="tableauDesBons(${index})">Détails du bon n° ${bon.numBon}</td>
+            <td>${montant[i]}</td>
             <td>${bon.description}</td>
             <td>${em}</td>
             <td>${ec}</td>
             <td>${bon.rang}</td>
-            <td>
-              <div><button onclick="tableauDesBons(${index})">Consulter le Bon</div>`
-              
+            <td>`
               if (quali == 2){
                 tableauBon +=
-              `
-              <div><button onclick="tableauDesBons(${index})">Utiliser ce bon pour paiement</div>`
+              `<div><button onclick="transferWindow(${index}, ${bon.numBon})">Utiliser ce bon pour paiement</div>`
               }
               tableauBon +=
               `</td>`
+              i++;
   }
 
   if (quali == 0){
@@ -269,6 +360,7 @@ function convertTime(_time){
 
 async function nouveauBon(index){
   dapp.coc.on("NouveauBon", (_numbon) => {
+    iframe.style.display = "none";
     alert("Nouveau bon émis.");
     afficherBons(index);
   });
@@ -293,6 +385,14 @@ async function nouveauBon(index){
 
   }
   let nouveauBonEmis = await dapp.coc._mint(_to.id, _numbon, _montant, _description, now.getTime(), _echeance);
+  console.log(nouveauBonEmis);
+  var iframe = document.createElement('iframe');
+  iframe.src="https://giphy.com/gifs/iLuuWPPytEZqM/html5"
+  iframe.width="480"
+  iframe.height="414"
+  iframe.frameBorder="0"
+  iframe.class="giphy-embed"
+  document.body.appendChild(iframe);
 
   
 }
