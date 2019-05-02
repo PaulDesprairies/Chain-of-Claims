@@ -294,14 +294,14 @@ contract bonDeCommande {
         uint[] memory montant;
         (num, montant) = listeDeCommandes(_holder);
         bool check;
-        uint index = 0;
+        uint indexMontantFrom = 0;
         for(uint i = 0; i < _longueurCarnetDeCommande(_holder); i++ ){
             if(num[i] == _numBon && montant[i] >= _montant){
                 check = true;
-                index = i;
+                indexMontantFrom = i;
             }
         }
-    return (check, index);
+    return (check, indexMontantFrom);
     }
     
         /**
@@ -393,15 +393,18 @@ contract bonDeCommande {
      * @param _montant order value
      * @param from address sending
      */
-    function transferSoustraction(address from, uint _numBon, uint _indexFrom, uint _montant) public view{ //internal
+    function transferSoustraction(address from, uint _numBon, uint _indexMontantFrom, uint _montant) public view{ //internal
         uint[] memory num;
         uint[] memory montant;
         (num, montant) = listeDeCommandes(from);
         
-        if(montant[_indexFrom] == _montant){                 //transfert de 100% du bon
-            supprimerCommande(from, _indexFrom, _numBon);
+        if(montant[_indexMontantFrom] == _montant){                 //transfert de 100% du bon
+            supprimerCommande(from, _indexMontantFrom, _numBon);
         }else{                                          //transfert d'une partie du bon
-            montant[_indexFrom] -= _montant;
+            uint index_debite;
+            Fournisseur memory fournisseur_debite;
+            (index_debite,fournisseur_debite) = fournisseursAttributes(from);
+            fournisseur_debite.montant[_indexMontantFrom] -= _montant;
         }
     }
 
@@ -409,13 +412,13 @@ contract bonDeCommande {
      * @dev Transfer an order from a supplier to another
      * @param _numBon order id
      * @param _montant order value
-     * @param _indexFrom index du bon de l'envoyeur
+     * @param _indexMontantFrom index du bon de l'envoyeur
      * @param to address receiving
      * @param from address sending
      */
-    function transfer(address to, address from, uint _indexFrom, uint _numBon, uint _montant) public{ //internal
+    function transfer(address to, address from, uint _indexMontantFrom, uint _numBon, uint _montant) public{ //internal
         transferAddition(to, _numBon, _montant);
-        transferSoustraction(from, _indexFrom, _numBon, _montant);
+        transferSoustraction(from, _numBon, _indexMontantFrom, _montant);
 
     }
     
@@ -429,10 +432,10 @@ contract bonDeCommande {
         require(_existsFournisseur(msg.sender),"Vous n'êtes pas enregistré en tant que fournisseur");
         require(_existsFournisseur(to) && !_isHigherSupplier(to), "Vous ne pouvez transférer les fonds qu'à un fournisseur déjà enregistré");
         bool check;
-        uint index;
-        (check, index) = checkIfHeldBonEtMontant(msg.sender, _numBon, _montant);
+        uint indexMontantFrom;
+        (check, indexMontantFrom) = checkIfHeldBonEtMontant(msg.sender, _numBon, _montant);
         require(check, "Vous ne possédez pas de ce bon en quantité suffisant (ou alors ne possédez pas ce bon du tout"); 
-        transfer(to, msg.sender, index, _numBon, _montant);
+        transfer(to, msg.sender, indexMontantFrom, _numBon, _montant);
     }
 
      /**
@@ -445,10 +448,10 @@ contract bonDeCommande {
         require(!_isHigherSupplier(msg.sender) || _existsFournisseur(msg.sender),"Vous n'êtes pas enregistré en tant que fournisseur");
         require(fournisseurs[_indexFournisseur[msg.sender]].client == from, "Vous ne pouvez vous faire parvenir des fonds qu'à votre client");
         bool check;
-        uint index;
-        (check, index) = checkIfHeldBonEtMontant(from, _numBon, _montant);
+        uint indexMontantFrom;
+        (check, indexMontantFrom) = checkIfHeldBonEtMontant(from, _numBon, _montant);
         require(check, "Votre client ne possède pas de ce bon en quantité suffisante (ou alors il ne possède pas ce bon du tout"); 
-        transfer(msg.sender, from, index, _numBon, _montant);
+        transfer(msg.sender, from, indexMontantFrom, _numBon, _montant);
     }
 
         /**
