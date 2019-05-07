@@ -1,4 +1,4 @@
-
+﻿
 
 
 ***** Quentin Décathlon *****
@@ -465,3 +465,92 @@ https://instinctbusiness.com/paroles-entrepreneurs/financement-poste-client-four
 
 ***** SNCF Agefi *****
 https://www.agefi.fr/financements-marches/actualites/video/20170925/process-profondement-transformes-227704
+
+***** cle electronique *****
+https://www.factofrance.com/fr/expertises/signature-electronique.html
+Toutes les solutions recourent à une clé électronique (!)
+
+
+
+
+
+******interview marchand*****
+finexkap beaucoup plus cher
+...
+
+
+********************************RECAP*********************************************
+
+En France en 2019 :
+700md d'encours
+30md géré par le découvert
+30md géré par affacturage (+10%/an)
+dont 3mds milliards par l'affacturage inversé
+
+1/ Le financement est un besoin réel
+2/ L'affacturage est une bonne solution, qui croit rapidement notamment avec la récent digitalisation et la simplification de ses process --> ouverture aux entreprises de + de 2m de CA.
+3/ Solution encore meilleure : affacturage inversée.
+		Moins cher :
+	a/ taux d'intérets faibles
+	b/ risque de non solvabilité très faible
+		Intégration des fournisseurs et gestion des risques.
+		prb :
+	a/ process longs et couteux
+	b/ nécessite un volume de 30m de facture
+
+Créance chaînées
+Un affacturage inversé rapide à mettre en place, léger à manipuler.
+Ouvrir l'affacturage inversé pour tous.
+
+
+
+************************Objectifs 04/05**************************
+Interviews web 
+Rapport d'étonnement : complexité
+chaque facto déploie d'énormes process
+signature numérique
+//
+
+Jean Marchand / commercial factofrance
+    Cauchemar : fraude
+    Risque : système de pooling
+    Il y a un marché pour l'extraction de données. Le factor impose le format.
+    Les boites les plus grosses (processés) sont celles ou les exports / les contrats sont les plus simples à gérer.
+    L'enfer procédurial c'est la petite PME / TPE : "on ne sait pas faire". --> Finexkap (bien plus couteux)
+    Copinage avec assurance crédit (off the record)
+
+Olivier Kircher / commercial factofrance
+    affacturage inversé (trop complexe : trop de fournisseurs)
+    linky : pleins de petits fournisseurs qui ne peuvent se payer un factor
+
+Julie Vadeau / fiscaliste Coface
+
+Lionel Blondeau / resp fin tech nord
+
+Charlotte Delorme / Supply chain plannification
+Transparence : douane. Hermès -> rang 2.
+
+
+
+Besoin :
+Simplicité, rapidité dans les process
+
+A voir semaine pro
+resp fintech Paris
+patrons monsquetaires
+un (voire deux) gestions de clientèle factofrance
+ceo finexkap
+
+
+
+
+Assurer croissance / CA
+
+investisseurs de finexkap : clients de finexkap
+mediateurs des entrepises
+mediation des entreprises. Linkedin.
+https://www.economie.gouv.fr/mediateur-des-entreprises + linkedin
+
+-- mediateurs d'entreprises : 3 annonces linkedin + site web
+-- Euleur hermes assurance crédit
+-- credit manager : evaluer le risque de ses clients / DAF de ETI

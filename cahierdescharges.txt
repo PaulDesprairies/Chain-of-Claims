@@ -13,3 +13,14 @@ Une partie serveur comportant (js) :
 
 Une partie back end comportant (sol) :
 1 - Contrats
+
+
+TDL
+Short term
+rechargement après bloc
+problème de montant max
+
+Long term
+CSS
+code secret
+deploiement de nouveaux noeuds
