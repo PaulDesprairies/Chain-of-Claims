@@ -158,11 +158,12 @@ contract bonDeCommande {
      * @param _echeance echeance du remboursement de la créance comptablement généré par le bon de commande
      */
      
-    function _mint(address to, uint _numBon, uint _montant, string memory _description, uint _emission, uint _echeance) public {
+    function _mint(address to, uint _numBon, uint _montant, string memory _description, uint _emission, uint _echeance) public payable {
         require(_isHigherSupplier(msg.sender),"Vous devez être le fournisseur en haut de chaîne");
         require(_existsFournisseur(to),"Veuillez enregistrer votre fournisseur d'abord ou lui laisser le temps de s'inscrire");
         require(to != msg.sender, "Vous ne pouvez pas vous auto-attribuer un bon");
         require(!_existsBon(_numBon),"Ce numéro de bon existe déjà");
+        require(msg.value == _montant , "merci de garantir votre bon"); //* 1000000000
 
 
         //Création du bon de commande
@@ -324,9 +325,10 @@ contract bonDeCommande {
      * @param _indexB order index
      * @param from address sending
      */
-    function supprimerCommandeBon(address from, uint _indexB) public{ //internal
+    function supprimerCommandeBon(address from, uint _indexB) public returns (uint){ //internal
 
         uint nbBons = _longueurCarnetDeCommande(from);
+        uint montant = fournisseurs[_indexFournisseur[from]].montant[_indexB];
         
         if (nbBons - 1 != _indexB){
             fournisseurs[_indexFournisseur[from]].bonsDeCommande[_indexB] = fournisseurs[_indexFournisseur[from]].bonsDeCommande[nbBons - 1];
@@ -334,7 +336,7 @@ contract bonDeCommande {
         }
         delete fournisseurs[_indexFournisseur[from]].bonsDeCommande[nbBons - 1];
         delete fournisseurs[_indexFournisseur[from]].montant[nbBons - 1];
-
+        return montant;
     }
     
        /**
@@ -365,9 +367,10 @@ contract bonDeCommande {
      * @param from address sending
      * @param _numBon order id
      */
-        function supprimerCommande(address from, uint _indexB, uint _numBon) public{ //internal
-            supprimerCommandeBon(from, _indexB);
+        function supprimerCommande(address from, uint _indexB, uint _numBon) public returns(uint){ //internal
+            uint montant = supprimerCommandeBon(from, _indexB);
             supprimerCommandeFournisseur(from, _numBon);
+            return montant;
         }
 
     
@@ -460,33 +463,35 @@ contract bonDeCommande {
      * @dev Check the order expiration.
      * @param _numBon order id
      */
-    function expiration(uint _numBon) public view returns(bool){
-        uint _echeance = bons[_indexBon[_numBon]].echeance;
-        return _echeance < block.timestamp;
-     }
+    // function expiration(uint _numBon) public view returns(bool){
+    //     uint _echeance = bons[_indexBon[_numBon]].echeance;
+    //     return _echeance > block.timestamp;
+    //  }
      
-        /**
+    /**
      * @dev Burn the token.
      * @param _numBon order id
      * @param from token holder
      * @param _indexB token position
      */
-     function burn(address from, uint _indexB, uint _numBon) public{
-         if(expiration(_numBon)){
-             supprimerCommande(from, _indexB, _numBon);
-             // payement de carrfour en ether
-         }
+     function burn(address payable from, uint _indexB, uint _numBon) public payable{
+        //  require(!expiration(_numBon), "Le bon sélectionné n'est pas arrivé à échéance");
+             uint montant = supprimerCommande(from, _indexB, _numBon);
+             payback(montant);
+         
      }
      
      
-        /**
-     * @dev Trigger payback.
+    /**
+     * @dev Trigger payback. //https://fiatcontract.com/#implement
      * @param _montant payable amount
-     * @param to account to be paid
      */
-     function payback(address payable to, uint _montant) public payable{
-         //payable function
-         //emit
+     function payback(uint _montant) public payable{
+        msg.sender.transfer(_montant);
+         emit payOff(_montant);
      }
-    
+
+    event payOff(
+        uint indexed _montant
+    );
 }

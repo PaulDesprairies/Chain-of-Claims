@@ -2,17 +2,28 @@ var dapp;
 var user;
 var quali;
 var iframe;
+var loadingObject;
+
+
 
 async function transferWindow(indexF, numBon){
   var userAddress = await dapp.coc.fournisseurs(indexF);
   var tierOne = await dapp.coc.listeTierOne(userAddress.id);
   if (tierOne.length == 0){
-      alert("Vous devez avoir enregistré au moins un fournisseur")
-  }else{
-  localStorage.setItem("indexF", indexF);
+    let info =""  ;
+    // info += 
+    // `<div class="alert alert-warning alert-dismissible fade in">
+    // <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+    // <strong>Warning!</strong> Vous devez avoir enregistré au moins un fournisseur.
+    // </div><br>`;
+
+    // document.getElementById("infoBons").innerHTML = info;
+
+    alert("Vous devez avoir enregistré au moins un fournisseur")
+    }else{
+    localStorage.setItem("indexF", indexF);
 
 
-  // Ne pas prendre le montant max du bon mais du fournisseur
   let indexBon 
   [,indexBon]= await dapp.coc.checkIfHeldBon(userAddress.id, numBon);
 
@@ -92,7 +103,6 @@ async function validateTransfer(){
   }
 
   let push = await dapp.coc.pushBon(numBon, montant, fournisseur);
-  let indexF = localStorage.getItem("indexF");
   console.log(push);
   patientez();
 }
@@ -104,6 +114,7 @@ async function goToOperations(){
 
 async function goToIndex(){
   await window.location.replace('index.html');
+
 }
 
 
@@ -123,31 +134,44 @@ var isSupplier = await dapp.coc._existsFournisseur(user);
     }else{
         return 1;
     }
+
 }
 
 
 async function redirection(){
     dapp = await load();
+
     user = await dapp.user;
     let supplier;
     let index;
     [index,supplier] = await dapp.coc.fournisseursAttributes(user); 
     var nomFournisseur = supplier.nom 
+
     quali = await qualification();
 
+
     if (quali == 0){
-        document.getElementById("bienvenue").innerHTML = "bienvenue admin " + nomFournisseur;
+        document.getElementById("bienvenue").innerHTML = "Bienvenue " + nomFournisseur +".<br> Statut : admin";
         afficherFournisseurs(index);
 
     }
     else if (quali == 1){
       document.getElementById("bienvenue").innerHTML = "Vous n'avez pas de droit d'accès à cette page.";
     }else if (quali == 2){
-      document.getElementById("bienvenue").innerHTML = "bienvenue fournisseur " + nomFournisseur;
+      document.getElementById("bienvenue").innerHTML = "Bienvenue " + nomFournisseur +".<br> Statut : fournisseur ";
       afficherFournisseurs(index);
       afficherBons(index);
 
     }
+}
+
+async function whoAmI(){
+  let supplier;
+  [,supplier] = await dapp.coc.fournisseursAttributes(user); 
+  var nomFournisseur = supplier.nom ;
+  var tvaFournisseur = supplier.tva;
+  var localisationFournisseur = supplier.localisation;
+  alert("Ce qu'on sait de vous : \n\nNom : " + nomFournisseur + "\nTVA :" +tvaFournisseur + "\nLocalisation :" +localisationFournisseur)
 }
 
 async function nouveauFournisseur(){
@@ -193,13 +217,24 @@ function secret() {
   return secretCode;
 }
 
+function checkSecret(){
+  let _secretHash = ""
+  _secretHash = document.getElementById("secretHash").value;
+if (_secretHash == ""){
+  alert("Merci de vous renseigner auprès de votre client pour obtenir un code gratuitement");
+  return
+}
+activateAccount(secretHash)
+}
 async function activateAccount(){
+
+
     let dapp = await load();    
-    dapp.coc.on("Activate", (secret) => {
+
+    dapp.coc.on("Activate", () => {
       iframe.style.display = "none";
       goToOperations();
     });
-    let _secretHash = document.getElementById("secretHash").value;
     document.getElementById("secretHash").value = "";
     document.getElementById("secretHash").placeholder = _secretHash;
     let secretHash = await dapp.coc.activateAccount(_secretHash);
@@ -208,23 +243,23 @@ async function activateAccount(){
 }
 
 async function afficherFournisseurs(index){
+  const f = document.createDocumentFragment();
     let currentUser = await dapp.user;
     let rangUser
     [,rangUser] = await dapp.coc.fournisseursAttributes(currentUser);
     document.getElementById("tableauDesFournisseurs").innerHTML = "Veuillez patienter...";
-    const f = document.createDocumentFragment();
     let tierOne;
     let userAddress = await dapp.coc.fournisseurs(index);
     tierOne = await dapp.coc.listeTierOne(userAddress.id);
     if (tierOne.length == 0){
-    var tableauFournisseur = `Enregistrez votre premier fournisseur.`
+    var tableauFournisseur = `<h4>Enregistrez votre premier fournisseur.</h4>`
     }else{
       let rangRelatif;
       rangRelatif = userAddress.rang - rangUser.rang + 1; 
-    var tableauFournisseur = `**** Tableau des fournisseurs de ${userAddress.nom} (Tiers ${rangRelatif})****`
+    var tableauFournisseur = `<h2> Tableau des fournisseurs de ${userAddress.nom} <small>(Tiers ${rangRelatif})</small> <h2>`
     }
     tableauFournisseur += `
-    <table>
+    <table class="table-hover">
     <thead>
       <tr>
         <th>Index</th>
@@ -232,8 +267,8 @@ async function afficherFournisseurs(index){
         <th>Localisation</th>
         <th>TVA</th>
         <th>Contact</th>
-        <th>Bons</th>
-        <th>Tier One</th>
+        <th>Liste de bons   </th>
+        <th>Liste Tier Ones   </th>
       </tr>
     </thead>`
     let i;
@@ -251,23 +286,23 @@ async function afficherFournisseurs(index){
               <td>${supplier.localisation}</td>
               <td>${supplier.tva}</td>
               <td>
-                <span><button onclick="javascript: window.location.href='${supplier.mail}';">Contacter</span>
+                <span><a href="javascript: window.location.href='${supplier.mail}';" class = "fa fa-paper-plane" aria-hidden="true"></a></span>
               </td>
               <td>
-                <span><button onclick="afficherBons(${index})">Consulter</span>
+                <span><a href="#" onclick="afficherBons(${index})" class="fa fa-search" aria-hidden="true"></a></span>
               </td>
               <td>
-                <span><button onclick="afficherFournisseurs(${index})">Consulter</span>
+                <span><a href="#" onclick="afficherFournisseurs(${index})" class="fa fa-search" aria-hidden="true"></a></span>
               </td>`
     }
 
     tableauFournisseur += `<tbody>
     <tr>
-      <td><span><button onclick="nouveauFournisseur()">Ajouter un nouveau fournisseur</span></td>
-      <td><input type ="text" id ="nom" placeholder="Nom"></input></td>
-      <td><input type ="text" id ="location" placeholder="Location"></input></td>
-      <td><input type ="text" id ="tva" placeholder="n° TVA"></input></td>
-      <td><input type ="text" id ="mail" placeholder="supplier@mail.here"></input></td>
+      <td><span ><button class= "btn btn-success" onclick="nouveauFournisseur()" >Ajouter un nouveau fournisseur</span></td>
+      <td><input class= "form-group" type ="text" id ="nom" placeholder="Nom"></input></td>
+      <td><input class= "form-group" type ="text" id ="location" placeholder="Location"></input></td>
+      <td><input class= "form-group" type ="text" id ="tva" placeholder="n° TVA"></input></td>
+      <td><input class= "form-group" type ="text" id ="mail" placeholder="supplier@mail.here"></input></td>
       <td></td>
       <td></td>
       </tr>
@@ -285,17 +320,17 @@ async function afficherFournisseurs(index){
 
 
 
-async function afficherBons(index){
+async function afficherBons(indexF){
   document.getElementById("tableauDesBons").innerHTML = "Veuillez patienter...";
   const f = document.createDocumentFragment();
   let currentUser = await dapp.user;
-  let userAddress = await dapp.coc.fournisseurs(index);
+  let userAddress = await dapp.coc.fournisseurs(indexF);
   [numBons, montant] = await dapp.coc.listeDeCommandes(userAddress.id);
     if (numBons.length == 0 && quali !=0){
-    var tableauBon = `Aucun bon référencé pour le moment.`
+    var tableauBon = `<h4>Aucun bon référencé pour le moment.</h4>`
     } else {
-    var tableauBon = ` ****Tableau des bons de ${userAddress.nom}****
-  <table>
+    var tableauBon = `<h2>Tableau des bons de ${userAddress.nom}</h2>
+  <table  class= "table-hover">
   <thead>
     <tr>
       <th>Index</th>
@@ -314,51 +349,66 @@ async function afficherBons(index){
         tableauBon +=
       `</tr>
   </thead>`
-  let i;
+  var now = convertTime(Date.now())
+  var i;
   i = 0;
   for (x of numBons){
       let bon = await dapp.coc.bonsAttributes(x);
       let em = convertTime(bon.dateEmission)
-      em = em.toLocaleDateString()
 
       let ec = convertTime(bon.echeance)
-      ec = ec.toLocaleDateString()
+
       tableauBon +=
-        `<tbody class="thead-light">
+        `<tbody>
           <tr>
             <th scope="row">${i + 1}</th>
-            <td><button onclick="afficherDetailsBons(${bon.numBon})">Détenteurs du bon n° ${bon.numBon}</td>
-            <td>${montant[i]}</td>
+            <td ><button class="btn btn-info" onclick="afficherDetailsBons(${bon.numBon})">Bon n° ${bon.numBon}</td>
+            <td>${montant[i]} wei</td>
             <td>${bon.description}</td>
-            <td>${em}</td>
-            <td>${ec}</td>
+            <td>${em.toLocaleDateString()}</td>
+            <td>${ec.toLocaleDateString()}</td>
             <td>`
 
               if (quali == 2 && currentUser == userAddress.id){
                 tableauBon +=
-              `<div><button onclick="transferWindow(${index}, ${bon.numBon})">Utiliser ce bon pour paiement</div>`
+              `<br><div><button class="btn btn-success" onclick="transferWindow(${indexF}, ${bon.numBon})">Utiliser ce bon pour paiement</div><br>`
+              //ec = new Date(ec);
+
+                if(now<ec){
+                  let delta = Math.round((ec-now)/86400000);
+                  tableauBon +=
+                  `<div ><button class="btn btn-warning" disabled = "true" onclick="burn(${i}, ${bon.numBon})">Bon reboursable dans ${delta} jours</div><br>`
+                }else{
+                  tableauBon +=
+                  `<div><button class="btn btn-warning" onclick="burn(${i}, ${bon.numBon})">Se faire payer ce bon</div><br>`
               }
+            }
               tableauBon +=
               `</td>`
               i++;
+  
   }
+
 
   if (quali == 0){
     let d = new Date();
     let now = d.toLocaleDateString();
     tableauBon += `<tbody>
   <tr>
-    <td><span><button onclick="nouveauBon(${index})">Emettre un nouveau bon</span></td>
-    <td><input type ="text" id ="numbon" placeholder="Numéro de bon"></input></td>
-    <td><input type ="text" id ="montant" placeholder="Montant"></input></td>
-    <td><input type ="text" id ="description" placeholder="Descriptions"></input></td>
+    <td><span><button class= "btn btn-success" onclick="nouveauBon(${indexF})">Emettre un nouveau bon</span></td>
+    <td><input class= "form-group" type ="text" id ="numbon" placeholder="Numéro de bon"></input></td>
+    <td><input class= "form-group" type ="text" id ="montant" placeholder="Montant"></input></td>
+    <td><input class= "form-group" type ="text" id ="description" placeholder="Descriptions"></input></td>
     <td>${now}</td>
-    <td><input type ="date" id ="echeance" placeholder="Date d'échéance"></input></td>
+    <td><input class= "form-group" type ="date" id ="echeance" placeholder="Date d'échéance"></input></td>
     </tr>
   </tbody>
   </table>`
     }
   }
+
+
+
   doc = document.createElement("div");
           doc.innerHTML = tableauBon;
           f.appendChild(doc);
@@ -381,6 +431,7 @@ async function nouveauBon(index){
     alert("Nouveau bon émis.");
     afficherBons(index);
   });
+
   let now = new Date();
   let _to = await dapp.coc.fournisseurs(index); 
   let _numbon = document.getElementById("numbon").value ;
@@ -401,7 +452,19 @@ async function nouveauBon(index){
     return;
 
   }
-  let nouveauBonEmis = await dapp.coc._mint(_to.id, _numbon, _montant, _description, now.getTime(), _echeance);
+  if (confirm("Vous vous apprétez à placer " + montant + " wei en commande. Continuer ?")){
+
+  } else {
+      alert("Operation abandonnée")
+      return
+  }
+    let overrides = {
+      gasLimit: 3000000,
+      value: ethers.utils.parseUnits(_montant, "wei"),
+    }
+
+
+  let nouveauBonEmis = await dapp.coc._mint(_to.id, _numbon, _montant, _description, now.getTime(), _echeance, overrides);
   console.log(nouveauBonEmis);
 
   patientez();
@@ -420,8 +483,9 @@ async function afficherDetailsBons(numBon){
   [,rangUser] = await dapp.coc.fournisseursAttributes(currentUser);
 
     var tableauDesBonsDetails
-    tableauDesBonsDetails += `**** Tableau des détenteurs du bon n° ${numBon} ****
-    <table>
+    tableauDesBonsDetails = "";
+    tableauDesBonsDetails += `<h2>Tableau des détenteurs du bon n° ${numBon}</h2>
+    <table  class="table-hover">
     <thead>
       <tr>
         <th>Index</th>
@@ -432,6 +496,8 @@ async function afficherDetailsBons(numBon){
         <th>Rang</th>
       </tr>
     </thead>`
+    var i;
+    i = 0;
 for (x in detenteurs){
   let fournisseur;
   [,fournisseur] = await dapp.coc.fournisseursAttributes(detenteurs[x]);
@@ -441,14 +507,15 @@ for (x in detenteurs){
   [,montant] = await dapp.coc.listeDeCommandes(fournisseur.id);
   let rangRelatif;
   rangRelatif = fournisseur.rang - rangUser.rang;
+  i++;
   tableauDesBonsDetails +=
   `<tbody>
     <tr>
-      <th scope="row">${x}</th>
+      <th>${i}</th>
       <td>${fournisseur.nom}</td>
       <td>${fournisseur.localisation}</td>
       <td>${fournisseur.tva}</td>
-      <td>${montant[indexMontant]}</td>
+      <td>${montant[indexMontant]} wei</td>
       <td>${rangRelatif}</td>`
 
 
@@ -458,18 +525,32 @@ for (x in detenteurs){
           f.appendChild(doc);
           document.getElementById("tableauDesBonsDetails").innerHTML = "";
           document.getElementById("tableauDesBonsDetails").appendChild(f);
-  
 }
 
 
+async function burn(indexB, numBon){
+  dapp.coc.on("PayOff", () => {
+    iframe.style.display = "none";
+    alert("Bon remboursé.");
+    afficherBons(index);
+  });
+  if (confirm("Voulez-vous vous faire rembourser votre bon de " + montant[indexB] + " wei ?")){
+    let remboursement = await dapp.coc.burn(dapp.user, indexB, numBon);
+    console.log(remboursement);
+    patientez();
+
+  } else {
+      alert("Operation abandonnée")
+      return
+  }
+}
+
 function patientez(){
   iframe = document.createElement('iframe');
-  iframe.src="https://giphy.com/gifs/iLuuWPPytEZqM/html5"
-  iframe.width="480"
-  iframe.height="414"
-  iframe.frameBorder="0"
-  iframe.class="giphy-embed"
+  iframe.id = "loading"
+  iframe.src = "https://giphy.com/gifs/iLuuWPPytEZqM/html5";
   document.body.appendChild(iframe);
+  iframe.appendChild(loadingObject);
 }
 
 
