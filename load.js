@@ -678,25 +678,6 @@ async function load() {
             "constant": true,
             "inputs": [
                 {
-                    "name": "_numBon",
-                    "type": "uint256"
-                }
-            ],
-            "name": "expiration",
-            "outputs": [
-                {
-                    "name": "",
-                    "type": "bool"
-                }
-            ],
-            "payable": false,
-            "stateMutability": "view",
-            "type": "function"
-        },
-        {
-            "constant": true,
-            "inputs": [
-                {
                     "name": "",
                     "type": "uint256"
                 }
@@ -957,7 +938,7 @@ async function load() {
         }
     ]
 
-    const addressContract = "0xa384578d2551c2f6c182332f4de5b2b2141fb57a" //Remix
+    const addressContract = "0xf4e729e64cb659c05c2f25416da4d75efae49563" //Remix
 
 
     try {
