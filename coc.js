@@ -31,7 +31,8 @@ async function transferWindow(indexF, numBon){
   [,montant]= await dapp.coc.listeDeCommandes(userAddress.id);
   localStorage.setItem("montant", montant[indexBon]);
   localStorage.setItem("numBon" , numBon)
-  await window.open("transferBon.html","mywindow","menubar=1,resizable=1,width=350,height=250");
+  localStorage.setItem("envoyeur",userAddress.nom)
+  await window.open("transferBon.html","mywindow","menubar=1,resizable=1,width=250,height=420");
   }
 }
 
@@ -78,16 +79,23 @@ async function validateTransfer(){
     iframe.style.display = "none";
     alert("Virement effectué.");
     localStorage.clear();
-    self.close();
+    if (document.getElementById("mailTransfer").checked == true){
+      window.location.assign('mailto:' + supplier.mail + '?subject=' + fournisseurNom + '%20veut%20vous%20envoyer%20un%20financement.&body=Rendez-vous%20sur%20http://127.0.0.1:8080/Chain-of-Claims/index.html');
+    }else{
+      self.close();
+    }
+    
 
   });
-
   var montantMax = localStorage.getItem("montant");
+  var fournisseurNom = localStorage.getItem("envoyeur");
   montantMax = parseInt(montantMax);
   var montant = document.getElementById("montant").value ;
   montant = parseInt(montant);
   var fournisseur = document.getElementById("fournisseur").value ;
   var numBon = localStorage.getItem("numBon");
+  let supplier;
+  [,supplier] = await dapp.coc.fournisseursAttributes(fournisseur);
 
 
   if (isNaN(montant)){
@@ -101,9 +109,15 @@ async function validateTransfer(){
   if (montant <= 0){
     alert("Merci de renseigner une valeur positive non nulle");
   }
+  try {
+  await dapp.coc.pushBon(numBon, montant, fournisseur);
 
-  let push = await dapp.coc.pushBon(numBon, montant, fournisseur);
-  console.log(push);
+  }catch (err){
+    // Gestion des erreurs
+    console.error(err);
+    alert(err);
+  }
+  //console.log(push);
   patientez();
 }
 
@@ -270,9 +284,17 @@ async function afficherFournisseurs(index){
         <th>Nom</th>
         <th>Localisation</th>
         <th>TVA</th>
-        <th>Contact</th>
-        <th>Emettre bon</th>
-        <th style="width:150px">Tier-1</th>
+        <th>Contact</th>`
+
+        if (quali == 0){
+          tableauFournisseur +=  `
+          <th>Emettre bon</th>`
+        }else{
+          tableauFournisseur +=`
+          <th>Consulter bon</th>`
+      }
+      tableauFournisseur +=`
+      <th style="width:150px">Tier-1</th>
       </tr>
     </thead>`
     let i;
@@ -293,10 +315,19 @@ async function afficherFournisseurs(index){
                 <span><a href="mailto:${supplier.mail}?subject=${rangUser.nom}%20veut%20vous%20envoyer%20un%20financement.&body=Rendez-vous%20sur%20http://127.0.0.1:8080/Chain-of-Claims/index.html" class = "fa fa-paper-plane" aria-hidden="true"></a></span>
                 
                 
-              </td>
+              </td>`
+              if (quali == 0){
+                tableauFournisseur += `
               <td>
                 <span><a href="#" onclick="afficherBons(${index})" class= "fas fa-plus-square" aria-hidden="true"></a></span>
-              </td>
+              </td>`
+              }else{
+                tableauFournisseur += `
+                <td>
+                <span><a href="#" onclick="afficherBons(${index})" class= "fa fa-search" aria-hidden="true"></a></span>
+              </td>`
+              }
+              tableauFournisseur += `
               <td>
                 <span><a href="#" onclick="afficherFournisseurs(${index})" class="fa fa-search" aria-hidden="true"></a></span>
               </td>`
@@ -376,10 +407,15 @@ async function afficherBons(indexF){
             <td>`
 
               if (quali == 2 && currentUser == userAddress.id){
+                if(montant[i] > 0){
                 tableauBon +=
-              `<br><div><button class="btn btn-success" onclick="transferWindow(${indexF}, ${bon.numBon})">Utiliser ce bon pour paiement</div><br>`
-              //ec = new Date(ec);
-
+                `<br><div><button class="btn btn-success" onclick="transferWindow(${indexF}, ${bon.numBon})">Utiliser ce bon pour paiement</div><br>`
+                }else{
+                  tableauBon +=
+                `<br><div><button class="btn btn-success" disabled = "true" onclick="transferWindow(${indexF}, ${bon.numBon})">Financement effectué.</div><br>`
+                }
+                
+                if(montant[i] > 0){
                 if(now<ec){
                   let delta = Math.round((ec-now)/86400000);
                   tableauBon +=
@@ -388,6 +424,7 @@ async function afficherBons(indexF){
                   tableauBon +=
                   `<div><button class="btn btn-warning" onclick="burn(${i}, ${bon.numBon})">Se faire payer ce bon</div><br>`
               }
+            }
             }
               tableauBon +=
               `</td>`
@@ -512,7 +549,7 @@ for (x in detenteurs){
   let montant;
   [,montant] = await dapp.coc.listeDeCommandes(fournisseur.id);
   let rangRelatif;
-  rangRelatif = fournisseur.rang - rangUser.rang;
+  rangRelatif = fournisseur.rang - rangUser.rang + 1;
   i++;
   tableauDesBonsDetails +=
   `<tbody>
