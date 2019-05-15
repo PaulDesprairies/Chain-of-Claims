@@ -339,7 +339,8 @@ async function afficherFournisseurs(index){
               </td>`
     }
 
-    tableauFournisseur += `<tbody>
+    if (rangRelatif == 1){
+    tableauFournisseur += `
     <tr>
       <td><span ><button class= "btn btn-success" onclick="nouveauFournisseur()" >Ajouter un nouveau fournisseur</span></td>
       <td><input class= "form-group" type ="text" id ="nom" placeholder="Nom"></input></td>
@@ -348,7 +349,20 @@ async function afficherFournisseurs(index){
       <td><input class= "form-group" type ="text" id ="mail" placeholder="supplier@mail.here"></input></td>
       <td></td>
       <td></td>
-      </tr>
+    </tr>`
+    } else{
+      tableauFournisseur += `
+      <tr>
+      <td id="footertable"></td>
+      <td id="footertable"></td>
+      <td id="footertable"></td>
+      <td id="footertable"></td>
+      <td id="footertable"></td>
+      <td id="footertable"></td>
+      <td id="footertable"></td>
+    </tr>`
+    }
+    tableauFournisseur += `
     </tbody>
     </table>`
     
@@ -379,12 +393,12 @@ async function afficherBons(indexF){
   <table  class= "table-hover">
   <thead>
     <tr>
-      <th>Index</th>
-      <th>Numéro de bon</th>
-      <th>Montant</th>
-      <th>Description</th>
-      <th>Date d'émission</th>
-      <th>Date d'échéance</th>`
+      <th id="footertable">Index</th>
+      <th id="footertable">Numéro de bon</th>
+      <th id="footertable">Montant</th>
+      <th id="footertable">Description</th>
+      <th id="footertable">Date d'émission</th>
+      <th id="footertable">Date d'échéance</th>`
 
       currentUser = currentUser.toUpperCase();
       userAddress.id = userAddress.id.toUpperCase();
@@ -540,12 +554,12 @@ async function afficherDetailsBons(numBon){
     <table  class="table-hover">
     <thead>
       <tr>
-        <th>Index</th>
-        <th>Nom</th>
-        <th>Localisation</th>
-        <th>TVA</th>
-        <th>Montant détenu</th>
-        <th>Rang</th>
+        <th id="footertable">Index</th>
+        <th id="footertable">Nom</th>
+        <th id="footertable">Localisation</th>
+        <th id="footertable">TVA</th>
+        <th id="footertable">Montant détenu</th>
+        <th id="footertable">Rang</th>
       </tr>
     </thead>`
     var i;
