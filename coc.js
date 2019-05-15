@@ -171,7 +171,8 @@ async function whoAmI(){
   var nomFournisseur = supplier.nom ;
   var tvaFournisseur = supplier.tva;
   var localisationFournisseur = supplier.localisation;
-  alert("Ce qu'on sait de vous : \n\nNom : " + nomFournisseur + "\nTVA :" +tvaFournisseur + "\nLocalisation :" +localisationFournisseur)
+  await window.location.replace('operations.html');
+  console.log("Ce qu'on sait de vous : \n\nNom : " + nomFournisseur + "\nTVA :" +tvaFournisseur + "\nLocalisation :" +localisationFournisseur)
 }
 
 async function nouveauFournisseur(){
@@ -188,8 +189,13 @@ async function nouveauFournisseur(){
       alert("Merci de renseigner une valeur pour le nom, le lieu et la TVA");
       return;
     }
+    let check;
     let _secret;
-    _secret = secret();
+    [check, _secret] = secret();
+    if(!check){
+      return;
+    }
+
     document.getElementById("nom").value = "";
     document.getElementById("location").value ="";
     document.getElementById("tva").value = "";
@@ -206,15 +212,15 @@ async function nouveauFournisseur(){
 }
 
 function secret() {
-  let txt;
-  let secretCode = prompt("Entrez un code secret:", "code");
+  var check;
+  var secretCode = prompt("Entrez un code secret:", "code");
   if (secretCode == null || secretCode == "") {
-    txt = "Annulation de l'opération";
+    check = false;
   } else {
-    txt = "Secret ok";
+    check = true;
   }
-  console.log(txt);
-  return secretCode;
+  console.log(check);
+  return [check,secretCode];
 }
 
 function checkSecret(){
@@ -224,28 +230,26 @@ if (_secretHash == ""){
   alert("Merci de vous renseigner auprès de votre client pour obtenir un code gratuitement");
   return
 }
-activateAccount(secretHash)
+activateAccount()
 }
 async function activateAccount(){
-
-
     let dapp = await load();    
 
     dapp.coc.on("Activate", () => {
       iframe.style.display = "none";
       goToOperations();
     });
-    document.getElementById("secretHash").value = "";
+    _secretHash = document.getElementById("secretHash").value;
     document.getElementById("secretHash").placeholder = _secretHash;
     let secretHash = await dapp.coc.activateAccount(_secretHash);
-    console.log(secretHash);
+    console.log(_secretHash);
     patientez();
 }
 
 async function afficherFournisseurs(index){
   const f = document.createDocumentFragment();
     let currentUser = await dapp.user;
-    let rangUser
+    var rangUser
     [,rangUser] = await dapp.coc.fournisseursAttributes(currentUser);
     document.getElementById("tableauDesFournisseurs").innerHTML = "Veuillez patienter...";
     let tierOne;
@@ -256,7 +260,7 @@ async function afficherFournisseurs(index){
     }else{
       let rangRelatif;
       rangRelatif = userAddress.rang - rangUser.rang + 1; 
-    var tableauFournisseur = `<h2> Tableau des fournisseurs de ${userAddress.nom} <small>(Tiers ${rangRelatif})</small> <h2>`
+    var tableauFournisseur = `<h2> Tableau des fournisseurs de ${rangUser.nom} <small>(Tiers ${rangRelatif})</small> <h2>`
     }
     tableauFournisseur += `
     <table class="table-hover">
@@ -267,8 +271,8 @@ async function afficherFournisseurs(index){
         <th>Localisation</th>
         <th>TVA</th>
         <th>Contact</th>
-        <th>Liste de bons   </th>
-        <th>Liste Tier Ones   </th>
+        <th>Emettre bon</th>
+        <th style="width:150px">Tier-1</th>
       </tr>
     </thead>`
     let i;
@@ -286,10 +290,12 @@ async function afficherFournisseurs(index){
               <td>${supplier.localisation}</td>
               <td>${supplier.tva}</td>
               <td>
-                <span><a href="javascript: window.location.href='${supplier.mail}';" class = "fa fa-paper-plane" aria-hidden="true"></a></span>
+                <span><a href="mailto:${supplier.mail}?subject=${rangUser.nom}%20veut%20vous%20envoyer%20un%20financement.&body=Rendez-vous%20sur%20http://127.0.0.1:8080/Chain-of-Claims/index.html" class = "fa fa-paper-plane" aria-hidden="true"></a></span>
+                
+                
               </td>
               <td>
-                <span><a href="#" onclick="afficherBons(${index})" class="fa fa-search" aria-hidden="true"></a></span>
+                <span><a href="#" onclick="afficherBons(${index})" class= "fas fa-plus-square" aria-hidden="true"></a></span>
               </td>
               <td>
                 <span><a href="#" onclick="afficherFournisseurs(${index})" class="fa fa-search" aria-hidden="true"></a></span>
@@ -452,7 +458,7 @@ async function nouveauBon(index){
     return;
 
   }
-  if (confirm("Vous vous apprétez à placer " + montant + " wei en commande. Continuer ?")){
+  if (confirm("Vous vous apprétez à placer " + _montant + " wei en commande. Continuer ?")){
 
   } else {
       alert("Operation abandonnée")
@@ -550,7 +556,6 @@ function patientez(){
   iframe.id = "loading"
   iframe.src = "https://giphy.com/gifs/iLuuWPPytEZqM/html5";
   document.body.appendChild(iframe);
-  iframe.appendChild(loadingObject);
 }
 
 
