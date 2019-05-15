@@ -263,18 +263,19 @@ async function activateAccount(){
 async function afficherFournisseurs(index){
   const f = document.createDocumentFragment();
     let currentUser = await dapp.user;
-    var rangUser
+    var rangUser;
+    let rangRelatif;
     [,rangUser] = await dapp.coc.fournisseursAttributes(currentUser);
+    let userAddress = await dapp.coc.fournisseurs(index);
+    rangRelatif = userAddress.rang - rangUser.rang + 1; 
     document.getElementById("tableauDesFournisseurs").innerHTML = "Veuillez patienter...";
     let tierOne;
-    let userAddress = await dapp.coc.fournisseurs(index);
+    var tableauFournisseur = "";
     tierOne = await dapp.coc.listeTierOne(userAddress.id);
-    if (tierOne.length == 0){
-    var tableauFournisseur = `<h4>Enregistrez votre premier fournisseur.</h4>`
-    }else{
-      let rangRelatif;
-      rangRelatif = userAddress.rang - rangUser.rang + 1; 
-    var tableauFournisseur = `<h2> Tableau des fournisseurs de ${rangUser.nom} <small>(Tiers ${rangRelatif})</small> <h2>`
+    if (tierOne.length == 0 && rangRelatif == 1){
+      tableauFournisseur = `<h4>Enregistrez votre premier fournisseur.</h4>`
+    }else if (tierOne.length > 0) {
+      tableauFournisseur = `<h2> Tableau des fournisseurs de ${rangUser.nom} <small>(Tiers - ${rangRelatif})</small> <h2>`
     }
     tableauFournisseur += `
     <table class="table-hover">
@@ -286,12 +287,12 @@ async function afficherFournisseurs(index){
         <th>TVA</th>
         <th>Contact</th>`
 
-        if (quali == 0){
+        if (quali == 0 && rangRelatif == 1){
           tableauFournisseur +=  `
           <th>Emettre bon</th>`
         }else{
           tableauFournisseur +=`
-          <th>Consulter bon</th>`
+          <th>Consulter bons</th>`
       }
       tableauFournisseur +=`
       <th style="width:150px">Tier-1</th>
@@ -316,10 +317,15 @@ async function afficherFournisseurs(index){
                 
                 
               </td>`
-              if (quali == 0){
+              if (quali == 0 && rangRelatif == 1){
                 tableauFournisseur += `
               <td>
                 <span><a href="#" onclick="afficherBons(${index})" class= "fas fa-plus-square" aria-hidden="true"></a></span>
+              </td>`
+              }else if (quali == 0 && rangRelatif > 1){
+                tableauFournisseur += `
+              <td>
+                <span><a href="#" onclick="afficherBons(${index})" class= "fa fa-search" aria-hidden="true"></a></span>
               </td>`
               }else{
                 tableauFournisseur += `
@@ -346,7 +352,9 @@ async function afficherFournisseurs(index){
     </tbody>
     </table>`
     
-
+    if (tierOne.length == 0 && rangRelatif > 1){
+      tableauFournisseur = `<h4>Fin de votre chaîne de fournisseur connue à ce jour</h4>`
+    }
     doc = document.createElement("div");
             doc.innerHTML = tableauFournisseur;
             f.appendChild(doc);
@@ -362,6 +370,7 @@ async function afficherBons(indexF){
   const f = document.createDocumentFragment();
   let currentUser = await dapp.user;
   let userAddress = await dapp.coc.fournisseurs(indexF);
+  var rang = userAddress.rang;
   [numBons, montant] = await dapp.coc.listeDeCommandes(userAddress.id);
     if (numBons.length == 0 && quali !=0){
     var tableauBon = `<h4>Aucun bon référencé pour le moment.</h4>`
@@ -433,7 +442,7 @@ async function afficherBons(indexF){
   }
 
 
-  if (quali == 0){
+  if (quali == 0 && rang == 1){
     let d = new Date();
     let now = d.toLocaleDateString();
     tableauBon += `<tbody>
@@ -594,6 +603,3 @@ function patientez(){
   iframe.src = "https://giphy.com/gifs/iLuuWPPytEZqM/html5";
   document.body.appendChild(iframe);
 }
-
-
-
