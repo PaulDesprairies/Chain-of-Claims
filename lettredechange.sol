@@ -320,58 +320,58 @@ contract bonDeCommande {
     }
     
     
-     /**
-     * @dev Delete order in suppliers' book in case they forwarded the whole order.
-     * @param _indexB order index
-     * @param from address sending
-     */
-    function supprimerCommandeBon(address from, uint _indexB) public returns (uint){ //internal
+    //  /**
+    //  * @dev Delete order in suppliers' book in case they forwarded the whole order.
+    //  * @param _indexB order index
+    //  * @param from address sending
+    //  */
+    // function supprimerCommandeBon(address from, uint _indexB) public returns (uint){ //internal
 
-        uint nbBons = _longueurCarnetDeCommande(from);
-        uint montant = fournisseurs[_indexFournisseur[from]].montant[_indexB];
+    //     uint nbBons = _longueurCarnetDeCommande(from);
+    //     uint montant = fournisseurs[_indexFournisseur[from]].montant[_indexB];
         
-        if (nbBons - 1 != _indexB){
-            fournisseurs[_indexFournisseur[from]].bonsDeCommande[_indexB] = fournisseurs[_indexFournisseur[from]].bonsDeCommande[nbBons - 1];
-            fournisseurs[_indexFournisseur[from]].montant[_indexB] = fournisseurs[_indexFournisseur[from]].montant[nbBons - 1];
-        }
-        delete fournisseurs[_indexFournisseur[from]].bonsDeCommande[nbBons - 1];
-        delete fournisseurs[_indexFournisseur[from]].montant[nbBons - 1];
-        return montant;
-    }
+    //     if (nbBons - 1 != _indexB){
+    //         fournisseurs[_indexFournisseur[from]].bonsDeCommande[_indexB] = fournisseurs[_indexFournisseur[from]].bonsDeCommande[nbBons - 1];
+    //         fournisseurs[_indexFournisseur[from]].montant[_indexB] = fournisseurs[_indexFournisseur[from]].montant[nbBons - 1];
+    //     }
+    //     delete fournisseurs[_indexFournisseur[from]].bonsDeCommande[nbBons - 1];
+    //     delete fournisseurs[_indexFournisseur[from]].montant[nbBons - 1];
+    //     return montant;
+    // }
     
        /**
      * @dev Delete order in suppliers' book (part supplier) in case they forwarded the whole order.
      * @param from address sending
      * @param _numBon order id
      */
-    function supprimerCommandeFournisseur(address from, uint _numBon) public{ //internal
-        address[] memory detenteurs = listeDeDetenteurs(_numBon);
-        uint nbDetenteurs = detenteurs.length;
-        uint _indexF;
+    // function supprimerCommandeFournisseur(address from, uint _numBon) public{ //internal
+    //     address[] memory detenteurs = listeDeDetenteurs(_numBon);
+    //     uint nbDetenteurs = detenteurs.length;
+    //     uint _indexF;
             
-            for(uint i = 0; i < nbDetenteurs; i++){
-                if(detenteurs[i] == from){
-                    _indexF = i;
-                }
-            }
+    //         for(uint i = 0; i < nbDetenteurs; i++){
+    //             if(detenteurs[i] == from){
+    //                 _indexF = i;
+    //             }
+    //         }
             
-            if(nbDetenteurs - 1 != _indexF){
-                bons[_indexBon[_numBon]].proprietaires[_indexF] = bons[_indexBon[_numBon]].proprietaires[nbDetenteurs-1];
-            }
+    //         if(nbDetenteurs - 1 != _indexF){
+    //             bons[_indexBon[_numBon]].proprietaires[_indexF] = bons[_indexBon[_numBon]].proprietaires[nbDetenteurs-1];
+    //         }
             
-            delete bons[_indexBon[_numBon]].proprietaires[nbDetenteurs-1];
-        }
+    //         delete bons[_indexBon[_numBon]].proprietaires[nbDetenteurs-1];
+    //     }
         
        /**
      * @dev Delete order in suppliers' book in case they forwarded the whole order.
      * @param from address sending
      * @param _numBon order id
      */
-        function supprimerCommande(address from, uint _indexB, uint _numBon) public returns(uint){ //internal
-            uint montant = supprimerCommandeBon(from, _indexB);
-            supprimerCommandeFournisseur(from, _numBon);
-            return montant;
-        }
+        // function supprimerCommande(address from, uint _indexB, uint _numBon) public returns(uint){ //internal
+        //     uint montant = fournisseurs[_indexFournisseur[from]].montant[_indexB];
+        //     supprimerCommandeFournisseur(from, _numBon);
+        //     return montant;
+        //}
 
     
     /**
@@ -397,14 +397,9 @@ contract bonDeCommande {
      * @param _montant order value
      * @param from address sending
      */
-    function transferSoustraction(address from, uint _numBon, uint _indexMontantFrom, uint _montant) public { //internal
-
-        if(fournisseurs[_indexFournisseur[from]].montant[_indexMontantFrom] == _montant){                 //transfert de 100% du bon
-            supprimerCommande(from, _indexMontantFrom, _numBon);
-        }else{                                                      //transfert d'une partie du bon
-            fournisseurs[_indexFournisseur[from]].montant[_indexMontantFrom] -= _montant;
-        }
-    }
+    // function transferSoustraction(address from, uint _numBon, uint _indexMontantFrom, uint _montant) public { //internal
+    //     fournisseurs[_indexFournisseur[from]].montant[_indexMontantFrom] -= _montant;
+    // }
 
     /**
      * @dev Transfer an order from a supplier to another
@@ -416,7 +411,8 @@ contract bonDeCommande {
      */
     function transfer(address to, address from, uint _indexMontantFrom, uint _numBon, uint _montant) public{ //internal
         transferAddition(to, _numBon, _montant);
-        transferSoustraction(from, _numBon, _indexMontantFrom, _montant);
+        // transferSoustraction(from, _numBon, _indexMontantFrom, _montant);
+        fournisseurs[_indexFournisseur[from]].montant[_indexMontantFrom] -= _montant;
 
     }
     
@@ -470,13 +466,13 @@ contract bonDeCommande {
      
     /**
      * @dev Burn the token.
-     * @param _numBon order id
      * @param from token holder
-     * @param _indexB token position
+     * @param _indexMontantFrom token position
      */
-     function burn(address payable from, uint _indexB, uint _numBon) public payable{
+     function burn(address payable from, uint _indexMontantFrom) public payable{
         //  require(!expiration(_numBon), "Le bon sélectionné n'est pas arrivé à échéance");
-             uint montant = supprimerCommande(from, _indexB, _numBon);
+             uint montant = fournisseurs[_indexFournisseur[from]].montant[_indexMontantFrom];
+             fournisseurs[_indexFournisseur[from]].montant[_indexMontantFrom] = 0;
              payback(montant);
          
      }
