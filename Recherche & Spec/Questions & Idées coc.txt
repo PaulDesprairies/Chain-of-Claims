@@ -1,0 +1,38 @@
+Réponses à trouver
+
+Quelles sont les solutions actuelles aux retards de paiement ?
+/***
+
+Crédit / banque
+Affacturage ? Plutôt pour couverture de risque.
+Autres : /***
+
+
+Quelle est la différence entre la Coface et l'affacturage dans la pratique / use case ? Les deux semblent couvrir contre le risque d'insolvabilité.
+/***
+
+Idées techniques
+Pull vs Push vs Hybride.
+Push : Le transfert donne droit à l'appropriation du token.
+Pull : j'ai le droit de me servir dans le wallet de mon client unilatéralement.
+Hybride : Droit d'appropriation puis appropriation.
+
+Idées business:
+proposer un système hybride d'affacturage simple vs affacturage inversé (pull vs push) au choix des bénéficiaires
+
+
+
+ERC20 ---> ERC 721 ou ERC 721 ---> ERC20 (current) ?
+
+***Use case de la lettre de change***
+POUR TOUS LES PAIEMENTS A ECHEANCE
+Je vous laisse la créance sur la table, vous la prenez si ca vous plait ou non.
+
+Opportunité :
+Plus de retards
+Plus de défaut
+Possibilité de gain BFR
+
+Risque :
+?
+
