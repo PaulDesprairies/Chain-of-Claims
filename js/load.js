@@ -38,8 +38,8 @@ async function load() {
             "constant": false,
             "inputs": [
                 {
-                    "name": "_secret",
-                    "type": "bytes32"
+                    "name": "_secretString",
+                    "type": "string"
                 }
             ],
             "name": "activateAccount",
@@ -165,6 +165,18 @@ async function load() {
             "type": "function"
         },
         {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "name": "_montant",
+                    "type": "uint256"
+                }
+            ],
+            "name": "payOff",
+            "type": "event"
+        },
+        {
             "constant": false,
             "inputs": [
                 {
@@ -207,6 +219,54 @@ async function load() {
             "payable": false,
             "stateMutability": "nonpayable",
             "type": "function"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "name": "secret",
+                    "type": "bytes32"
+                }
+            ],
+            "name": "Secret",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "name": "secret",
+                    "type": "bytes32"
+                }
+            ],
+            "name": "Activate",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "name": "_numBon",
+                    "type": "uint256"
+                }
+            ],
+            "name": "NouveauBon",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "name": "_montant",
+                    "type": "uint256"
+                }
+            ],
+            "name": "PushBon",
+            "type": "event"
         },
         {
             "constant": false,
@@ -282,66 +342,6 @@ async function load() {
             "payable": false,
             "stateMutability": "nonpayable",
             "type": "constructor"
-        },
-        {
-            "anonymous": false,
-            "inputs": [
-                {
-                    "indexed": true,
-                    "name": "secret",
-                    "type": "bytes32"
-                }
-            ],
-            "name": "Secret",
-            "type": "event"
-        },
-        {
-            "anonymous": false,
-            "inputs": [
-                {
-                    "indexed": true,
-                    "name": "secret",
-                    "type": "bytes32"
-                }
-            ],
-            "name": "Activate",
-            "type": "event"
-        },
-        {
-            "anonymous": false,
-            "inputs": [
-                {
-                    "indexed": true,
-                    "name": "_numBon",
-                    "type": "uint256"
-                }
-            ],
-            "name": "NouveauBon",
-            "type": "event"
-        },
-        {
-            "anonymous": false,
-            "inputs": [
-                {
-                    "indexed": true,
-                    "name": "_montant",
-                    "type": "uint256"
-                }
-            ],
-            "name": "PushBon",
-            "type": "event"
-        },
-        {
-            "anonymous": false,
-            "inputs": [
-                {
-                    "indexed": true,
-                    "name": "_montant",
-                    "type": "uint256"
-                }
-            ],
-            "name": "payOff",
-            "type": "event"
         },
         {
             "constant": true,
@@ -840,7 +840,7 @@ async function load() {
         }
     ]
 
-    const addressContract = "0x528ed96fbe9d71d45eb68abd8399329a092dd37f" //Remix
+    const addressContract = "0xd8f64c311f7992f26e9b5314642e65d6386d9830" //Remix
 
 
     try {

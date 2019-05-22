@@ -165,14 +165,14 @@ async function redirection(){
 
 
     if (quali == 0){
-        document.getElementById("bienvenue").innerHTML = "Bienvenue " + nomFournisseur +".<br> Statut : admin";
+        document.getElementById("bienvenue").innerHTML = "Bienvenue " + nomFournisseur +".<br> <strong>Admin</strong>";
         afficherFournisseurs(index);
 
     }
     else if (quali == 1){
       document.getElementById("bienvenue").innerHTML = "Vous n'avez pas de droit d'accès à cette page.";
     }else if (quali == 2){
-      document.getElementById("bienvenue").innerHTML = "Bienvenue " + nomFournisseur +".<br> Statut : fournisseur ";
+      document.getElementById("bienvenue").innerHTML = "Bienvenue " + nomFournisseur +".<br> <strong>Fournisseur</strong> ";
       afficherFournisseurs(index);
       afficherBons(index);
 
@@ -287,7 +287,7 @@ async function afficherFournisseurs(index){
       tableauFournisseur = `<h2> Tableau des fournisseurs de ${rangUser.nom} <small>(Tiers - ${rangRelatif})</small> <h2>`
     }
     tableauFournisseur += `
-    <table class="table-hover">
+    <table id="tablestyle" class="table-hover">
     <thead>
       <tr>
         <th>Index</th>
@@ -322,36 +322,34 @@ async function afficherFournisseurs(index){
               <td>${supplier.localisation}</td>
               <td>${supplier.tva}</td>
               <td>
-                <span><a href="mailto:${supplier.mail}?subject=${rangUser.nom}%20veut%20vous%20envoyer%20un%20financement.&body=Rendez-vous%20sur%20http://127.0.0.1:8080/Chain-of-Claims/index.html" class = "fa fa-paper-plane" aria-hidden="true"></a></span>
-                
-                
+                <span><a href="mailto:${supplier.mail}?subject=${rangUser.nom}%20veut%20vous%20envoyer%20un%20financement.&body=Rendez-vous%20sur%20http://127.0.0.1:8080/Chain-of-Claims/index.html" class = "fa fa-paper-plane" aria-hidden="true"  id="icon"></a></span>
               </td>`
               if (quali == 0 && rangRelatif == 1){
                 tableauFournisseur += `
               <td>
-                <span><a href="#" onclick="afficherBons(${index})" class= "fas fa-plus-square" aria-hidden="true"></a></span>
+                <span><a href="#" onclick="afficherBons(${index})" class= "fas fa-plus-square" aria-hidden="true" id="icon"></a></span>
               </td>`
               }else if (quali == 0 && rangRelatif > 1){
                 tableauFournisseur += `
               <td>
-                <span><a href="#" onclick="afficherBons(${index})" class= "fa fa-search" aria-hidden="true"></a></span>
+                <span><a href="#" onclick="afficherBons(${index})" class= "fa fa-search" aria-hidden="true" id="icon"></a></span>
               </td>`
               }else{
                 tableauFournisseur += `
                 <td>
-                <span><a href="#" onclick="afficherBons(${index})" class= "fa fa-search" aria-hidden="true"></a></span>
+                <span><a href="#" onclick="afficherBons(${index})" class= "fa fa-search" aria-hidden="true" id="icon"></a></span>
               </td>`
               }
               tableauFournisseur += `
               <td>
-                <span><a href="#" onclick="afficherFournisseurs(${index})" class="fa fa-search" aria-hidden="true"></a></span>
+                <span><a href="#" onclick="afficherFournisseurs(${index})" class="fa fa-search" aria-hidden="true" id="icon"></a></span>
               </td>`
     }
 
     if (rangRelatif == 1){
     tableauFournisseur += `
     <tr>
-      <td><span ><button class= "btn btn-success" onclick="nouveauFournisseur()" >Ajouter un nouveau fournisseur</span></td>
+      <td><span ><button class= "btn btn-light" onclick="nouveauFournisseur()" >Ajouter un nouveau fournisseur</span></td>
       <td><input class= "form-group" type ="text" id ="nom" placeholder="Nom"></input></td>
       <td><input class= "form-group" type ="text" id ="location" placeholder="Location"></input></td>
       <td><input class= "form-group" type ="text" id ="tva" placeholder="n° TVA"></input></td>
@@ -399,7 +397,7 @@ async function afficherBons(indexF){
     var tableauBon = `<h4>Aucun bon référencé pour le moment.</h4>`
     } else {
     var tableauBon = `<h2>Tableau des bons de ${userAddress.nom}</h2>
-  <table  class= "table-hover">
+  <table  id ="tablestyle" class= "table-hover">
   <thead>
     <tr>
       <th id="footertable">Index</th>
@@ -431,7 +429,7 @@ async function afficherBons(indexF){
         `<tbody>
           <tr>
             <th scope="row">${i + 1}</th>
-            <td ><button class="btn btn-info" onclick="afficherDetailsBons(${bon.numBon})">Bon n° ${bon.numBon}</td>
+            <td ><button class="btn btn-light" onclick="afficherDetailsBons(${bon.numBon})">Bon n° ${bon.numBon}</td>
             <td>${montant[i]} wei</td>
             <td>${bon.description}</td>
             <td>${em.toLocaleDateString()}</td>
@@ -560,7 +558,7 @@ async function afficherDetailsBons(numBon){
     var tableauDesBonsDetails
     tableauDesBonsDetails = "";
     tableauDesBonsDetails += `<h2>Tableau des détenteurs du bon n° ${numBon}</h2>
-    <table  class="table-hover">
+    <table id="tablestyle" class="table-hover">
     <thead>
       <tr>
         <th id="footertable">Index</th>

@@ -1,6 +1,4 @@
-
-  
-  h2 {
+h2 {
     color: black;
     text-align: left;
 }
@@ -18,7 +16,7 @@ p {
 }
 
 #pageOperations{
-    background-color: whitesmoke;
+  background: url("operations.jpg")no-repeat center center;
 }
 
 #darker{
@@ -94,4 +92,9 @@ margin-top: 20px;
 
 #footertable{
   width:150px;
+}
+
+#tablestyle{
+  background-color: #fff;
+  opacity: 0.75;
 }
