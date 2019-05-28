@@ -16,7 +16,7 @@ p {
 }
 
 #pageOperations{
-  background: url("operations.jpg")no-repeat center center;
+  background: url("operations2.jpg")no-repeat center center;
 }
 
 #darker{
@@ -82,7 +82,7 @@ header{
 }
 
 #titleoperation{
-  margin-left: 20px;
+  margin-left: 30px;
 }
 
 #transferBon{
@@ -96,5 +96,29 @@ margin-top: 20px;
 
 #tablestyle{
   background-color: #fff;
-  opacity: 0.75;
+  opacity: 0.65;
+  margin-left: 5px;
+  width: 95%;
+}
+
+#icon{
+  color: black;
+}
+
+h4{
+  margin-left: 20px;
+  margin-top: 10px; 
+}
+
+#btn{
+  margin-left: 20px;
+  margin-bottom: 10px;
+}
+
+#adjust{
+  margin-left: 20px;
+}
+
+table{
+  margin : 20px;
 }

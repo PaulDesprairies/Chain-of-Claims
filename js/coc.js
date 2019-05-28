@@ -192,7 +192,7 @@ async function whoAmI(){
 async function nouveauFournisseur(){
     dapp.coc.on("Secret", (secret) => {
       iframe.style.display = "none";
-      alert("Nouveau compte en attente de validation. /nNDA envoyé. /nDocuments de garanties envoyés. /nClé publique :" + secret);
+      alert("Nouveau compte en attente de validation. \nNDA envoyé. \nDocuments de garanties envoyés. \nClé publique :" + secret);
     });
 
     let _nom = document.getElementById("nom").value ;
@@ -256,7 +256,7 @@ async function activateAccount(){
     _secretHash = document.getElementById("secretHash").value;
     document.getElementById("secretHash").placeholder = _secretHash;
     window.open('https://file.globalupload.io/0kUUBQ6tm4.pdf', '_blank');
-    if (confirm("Vous vous apprétez à rejoindre un écosystème fermé décentralisé et réglementé. En continuant, vous vous engagez à signer un NDA et les documents de garanties. Continuer ?")){
+    if (confirm("Vous vous apprétez à rejoindre un écosystème fermé décentralisé et réglementé. \nEn continuant, vous vous engagez à signer un NDA et les documents de garanties. Continuer ?")){
 
     } else {
         alert("Operation abandonnée")
@@ -282,12 +282,12 @@ async function afficherFournisseurs(index){
     var tableauFournisseur = "";
     tierOne = await dapp.coc.listeTierOne(userAddress.id);
     if (tierOne.length == 0 && rangRelatif == 1){
-      tableauFournisseur = `<h4>Enregistrez votre premier fournisseur.</h4>`
+      tableauFournisseur = `<div id="tablestyle"><h4>Enregistrez votre premier fournisseur.</h4>`
     }else if (tierOne.length > 0) {
-      tableauFournisseur = `<h2> Tableau des fournisseurs de ${rangUser.nom} <small>(Tiers - ${rangRelatif})</small> <h2>`
+      tableauFournisseur = `<div id="tablestyle"><h4> Fournisseurs Tiers - ${rangRelatif} de ${rangUser.nom} </h4>  `
     }
     tableauFournisseur += `
-    <table id="tablestyle" class="table-hover">
+    <table class="table-hover">
     <thead>
       <tr>
         <th>Index</th>
@@ -304,7 +304,7 @@ async function afficherFournisseurs(index){
           <th>Consulter bons</th>`
       }
       tableauFournisseur +=`
-      <th style="width:150px">Tier-1</th>
+      <th style="width:150px">Tier-${rangRelatif + 1}</th>
       </tr>
     </thead>`
     let i;
@@ -349,32 +349,33 @@ async function afficherFournisseurs(index){
     if (rangRelatif == 1){
     tableauFournisseur += `
     <tr>
-      <td><span ><button class= "btn btn-light" onclick="nouveauFournisseur()" >Ajouter un nouveau fournisseur</span></td>
-      <td><input class= "form-group" type ="text" id ="nom" placeholder="Nom"></input></td>
-      <td><input class= "form-group" type ="text" id ="location" placeholder="Location"></input></td>
-      <td><input class= "form-group" type ="text" id ="tva" placeholder="n° TVA"></input></td>
-      <td><input class= "form-group" type ="text" id ="mail" placeholder="supplier@mail.here"></input></td>
-      <td></td>
-      <td></td>
+      <td id="footertable"><span ><button class= "btn btn-success" onclick="nouveauFournisseur()" >Ajouter un nouveau fournisseur</span></td>
+      <td id="footertable"><input class= "form-group" type ="text" id ="nom" placeholder="Nom"></input></td>
+      <td id="footertable"><input class= "form-group" type ="text" id ="location" placeholder="Location"></input></td>
+      <td id="footertable"><input class= "form-group" type ="text" id ="tva" placeholder="n° TVA"></input></td>
+      <td id="footertable"><input class= "form-group" type ="text" id ="mail" placeholder="supplier@mail.here"></input></td>
+      <td id="footertable"></td>
+      <td id="footertable"></td>
     </tr>`
     } else{
       tableauFournisseur += `
-      <tr>
-      <td id="footertable"></td>
-      <td id="footertable"></td>
-      <td id="footertable"></td>
-      <td id="footertable"></td>
-      <td id="footertable"></td>
-      <td id="footertable"></td>
-      <td id="footertable"></td>
-    </tr>`
+    <tr>
+    <td id="footertable"></td>
+    <td id="footertable"></td>
+    <td id="footertable"></td>
+    <td id="footertable"></td>
+    <td id="footertable"></td>
+    <td id="footertable"></td>
+    <td id="footertable"></td>
+  </tr>`
     }
     tableauFournisseur += `
     </tbody>
-    </table>`
+    </table>
+    <div>`
     
     if (tierOne.length == 0 && rangRelatif > 1){
-      tableauFournisseur = `<h4>Fin de votre chaîne de fournisseur connue à ce jour</h4>`
+      tableauFournisseur = `<div id="tablestyle"><h4>Fin de votre chaîne de fournisseurs connue à ce jour</h4></div>`
     }
     doc = document.createElement("div");
             doc.innerHTML = tableauFournisseur;
@@ -394,10 +395,10 @@ async function afficherBons(indexF){
   var rang = userAddress.rang;
   [numBons, montant] = await dapp.coc.listeDeCommandes(userAddress.id);
     if (numBons.length == 0 && quali !=0){
-    var tableauBon = `<h4>Aucun bon référencé pour le moment.</h4>`
+    var tableauBon = `<div id="tablestyle"><h4>Aucun bon référencé pour le moment.</h4>`
     } else {
-    var tableauBon = `<h2>Tableau des bons de ${userAddress.nom}</h2>
-  <table  id ="tablestyle" class= "table-hover">
+    var tableauBon = `<div id="tablestyle"><h4>Tableau des bons de commande de ${userAddress.nom}</h4>
+  <table id= "adjust" class= "table-hover">
   <thead>
     <tr>
       <th id="footertable">Index</th>
@@ -430,7 +431,7 @@ async function afficherBons(indexF){
           <tr>
             <th scope="row">${i + 1}</th>
             <td ><button class="btn btn-light" onclick="afficherDetailsBons(${bon.numBon})">Bon n° ${bon.numBon}</td>
-            <td>${montant[i]} wei</td>
+            <td>${montant[i]} Euro</td>
             <td>${bon.description}</td>
             <td>${em.toLocaleDateString()}</td>
             <td>${ec.toLocaleDateString()}</td>
@@ -476,7 +477,8 @@ async function afficherBons(indexF){
     <td><input class= "form-group" type ="date" id ="echeance" placeholder="Date d'échéance"></input></td>
     </tr>
   </tbody>
-  </table>`
+  </table>
+  <div>`
     }
   }
 
@@ -525,7 +527,7 @@ async function nouveauBon(index){
     return;
 
   }
-  if (confirm("Vous vous apprétez à placer " + _montant + " wei en commande. Continuer ?")){
+  if (confirm("Vous vous apprétez à placer " + _montant + " Euro en commande. Continuer ?")){
 
   } else {
       alert("Operation abandonnée")
@@ -557,8 +559,8 @@ async function afficherDetailsBons(numBon){
 
     var tableauDesBonsDetails
     tableauDesBonsDetails = "";
-    tableauDesBonsDetails += `<h2>Tableau des détenteurs du bon n° ${numBon}</h2>
-    <table id="tablestyle" class="table-hover">
+    tableauDesBonsDetails += `<div id="tablestyle"><h4>Tableau des détenteurs du bon n° ${numBon}</h4>
+    <table class="table-hover">
     <thead>
       <tr>
         <th id="footertable">Index</th>
@@ -588,8 +590,12 @@ for (x in detenteurs){
       <td>${fournisseur.nom}</td>
       <td>${fournisseur.localisation}</td>
       <td>${fournisseur.tva}</td>
-      <td>${montant[indexMontant]} wei</td>
-      <td>${rangRelatif}</td>`
+      <td>${montant[indexMontant]} Euro </td>
+      <td>${rangRelatif}</td>
+    </tr>
+    </tbody>
+    </table>
+    </div>`
 
 
     }
