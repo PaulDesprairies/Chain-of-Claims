@@ -1,5 +1,5 @@
 # Chain-of-Claims
-Interface permettant le traçage d'une chaîne d'approvisionnement par le financement de ses fournisseurs.
+Interface permettant la traçabilité d'une chaîne d'approvisionnement par le financement de ses fournisseurs.
 
 ### Développement : ###
 * Solidity
